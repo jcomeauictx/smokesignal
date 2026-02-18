@@ -8,5 +8,5 @@ a code of its own data plus a hash of the data it saw.
 A community of laptops in windows could have a mesh of these, with houses
 with more than one computer serving as routers.
 
-Scaling wider, telescopes and large screens could potentially have
-point-to-point links many kilometers distant.
+Scaling wider, telescopes and large screens could potentially enable
+point-to-point links many kilometers distant, linking community meshes.
