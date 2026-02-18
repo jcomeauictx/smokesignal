@@ -13,10 +13,10 @@ def test(text):
     '''
     image = qrcode.make(text)
     qrtools = QR(data=text)
-    logging.debug('qrtools: %s', qrtools)
+    logging.debug('qrtools: %s', vars(qrtools))
     image.show()
     code = qrtools.decode(image=image)
-    logging.info('qrtools: %s, code: %r', qrtools, code)
+    logging.info('qrtools: %s, code: %r', vars(qrtools), code)
 
 if __name__ == '__main__':
     test(' '.join(sys.argv[1:]) or 'This is a test of smokesignal')
