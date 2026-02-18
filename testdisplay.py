@@ -2,7 +2,10 @@
 '''
 test display of QR code
 '''
-import sys, qrcode
+import sys, qrcode, logging
+from cv2.barcode import BarcodeDetector
+
+logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
 def test(text):
     '''
@@ -10,7 +13,8 @@ def test(text):
     '''
     image = qrcode.make(text)
     image.show()
-    input()
+    barcode = BarcodeDetector().detectAndDecode(image)
+    logging.info('barcode: %r', barcode)
 
 if __name__ == '__main__':
     test(' '.join(sys.argv[1:]) or 'This is a test of smokesignal')
