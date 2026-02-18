@@ -3,7 +3,7 @@
 test display of QR code
 '''
 import sys, qrcode, logging
-from cv2.barcode import BarcodeDetector
+from zbar import ImageScanner
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -13,7 +13,7 @@ def test(text):
     '''
     image = qrcode.make(text)
     image.show()
-    barcode = BarcodeDetector().detectAndDecode(image)
+    barcode = ImageScanner.scan(image)
     logging.info('barcode: %r', barcode)
 
 if __name__ == '__main__':
