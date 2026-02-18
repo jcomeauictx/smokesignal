@@ -12,7 +12,7 @@ def test():
     if capture.isOpened():
         captured = capture.read()
         if captured[0]:
-            cv2.imshow(captured[1])
+            cv2.imshow('frame captured', captured[1])
             input()
 
 if __name__ == '__main__':
