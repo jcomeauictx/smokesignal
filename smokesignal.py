@@ -2,9 +2,10 @@
 '''
 communicate visually with another computer using QR codes
 '''
+# pylint: disable=c-extension-no-member  # for cv2
 import sys, logging  # pylint: disable=multiple-imports
-import qrcode, cv2  # pylint: disable=multiple-imports
 from tkinter import Tk, Label
+import qrcode, cv2  # pylint: disable=multiple-imports
 from PIL.ImageTk import PhotoImage as Photo
 from qrtools import QR
 
@@ -20,35 +21,47 @@ def send(document):
     label = Label(window, text='Starting...')
     label.pack()
     window.update()
-    with open(document) as data:
+    with open(document, 'rb') as data:
         chunked = chunks(data.read())
+        chunk = seen = None
         while capture.isOpened():
-            chunk = next(chunked, None)
-            show_qr(label, chunk)
+            if chunk == seen:
+                chunk = next(chunked, None)
+            qrshow(label, chunk)
             captured = capture.read()
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
+                seen = qrdecode(captured[1])
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
     cv2.destroyAllWindows()
     window.destroy()
 
-def show_qr(label, text):
+def qrshow(label, text):
     '''
     display a QR code
     '''
     if text:
         image = qrcode.make(text)
         photo = Photo(image)
-        qrtools = QR(data=text)
-        logging.debug('qrtools: %s', vars(qrtools))
+        qr = QR(data=text)
+        logging.debug('qr: %s', vars(qr))
         label.configure(image=photo, text=None)
         label.image = photo  # claude: necessary to thwart garbage collection
         label.update()
-        code = qrtools.decode(image=image)
-        logging.info('qrtools: %s, code: %r', vars(qrtools), code)
+        logging.debug('image: %s', image)
+        code = qrdecode(image)
+        logging.info('code: %r', code)
+
+def qrdecode(image):
+    '''
+    get text/data from QR code image
+    '''
+    qr = QR(data='')
+    decoded = qr.decode(image=image)
+    return decoded
 
 def chunks(data, size=128):
     '''
@@ -60,4 +73,3 @@ def chunks(data, size=128):
 if __name__ == '__main__':
     # if no document specified, send this file itself
     send((sys.argv[1:] + [sys.argv[0]])[0])
-
