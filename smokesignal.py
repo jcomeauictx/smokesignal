@@ -18,6 +18,7 @@ def send(document):
     window = Tk()
     label = Label(window, text='Starting...')
     label.pack()
+    window.update()
     with open(document) as data:
         chunked = chunks(data.read())
         while capture.isOpened():
@@ -41,8 +42,9 @@ def show_qr(label, text):
         photo = Photo(image)
         qrtools = QR(data=text)
         logging.debug('qrtools: %s', vars(qrtools))
-        label.configure(image=photo)
+        label.configure(image=photo, text=None)
         label.image = photo  # claude: necessary to thwart garbage collection
+        label.update()
         code = qrtools.decode(image=image)
         logging.info('qrtools: %s, code: %r', vars(qrtools), code)
 
