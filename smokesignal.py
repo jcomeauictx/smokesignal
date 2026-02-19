@@ -16,6 +16,7 @@ def send(document):
     '''
     capture = cv2.VideoCapture(0)
     window = Tk()
+    window.geometry('+0+0')
     label = Label(window, text='Starting...')
     label.pack()
     window.update()
@@ -27,6 +28,7 @@ def send(document):
             captured = capture.read()
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
+                cv2.moveWindow('frame captured', 800, 0)
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
