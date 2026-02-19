@@ -4,6 +4,8 @@ communicate visually with another computer using QR codes
 '''
 import sys, logging  # pylint: disable=multiple-imports
 import qrcode, cv2  # pylint: disable=multiple-imports
+from tkinter import Tk, Label
+from PIL.ImageTk import PhotoImage as Photo
 from qrtools import QR
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
