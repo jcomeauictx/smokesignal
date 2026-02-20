@@ -24,7 +24,7 @@ def send(document):
     window.update()
     with open(document, 'rb') as data:
         chunked = chunks(data.read())
-        chunk = seen = None
+        chunk = seen = lastseen = None
         while capture.isOpened():
             if chunk == seen:
                 chunk = next(chunked, None)
@@ -34,7 +34,9 @@ def send(document):
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
-                logging.debug('seen: %s', seen)
+                if seen != lastseen:
+                    logging.debug('seen: %s, chunk: %s', seen, chunk)
+                    lastseen = seen
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
