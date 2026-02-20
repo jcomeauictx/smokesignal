@@ -6,6 +6,7 @@ communicate visually with another computer using QR codes
 import sys, logging  # pylint: disable=multiple-imports
 from tkinter import Tk, Label
 import qrcode, cv2  # pylint: disable=multiple-imports
+from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
 from qrtools import QR
 
@@ -32,7 +33,7 @@ def send(document):
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
-                seen = qrdecode(captured[1])
+                seen = qrdecode(Image.fromarray(captured[1]))
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
