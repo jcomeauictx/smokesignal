@@ -63,8 +63,8 @@ def qrdecode(image):
     '''
     qr = QR(data=b'')
     decoded = qr.decode(image=image)
-    #logging.debug('decoded: %s, qr: %s', decoded, vars(qr))
-    return qr.data if decoded else None
+    #logging.debug('decoded: %r, qr: %s', decoded, vars(qr))
+    return qr.data.encode('latin-1') if decoded else None
 
 def chunks(data, size=128):
     '''
