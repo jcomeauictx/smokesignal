@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 '''
 communicate visually with another computer using QR codes
+
+QR codes sent and received start with a hash of the chunk
+last received; the remainder is the chunk being sent
 '''
 # pylint: disable=c-extension-no-member  # for cv2
 import sys, os, logging  # pylint: disable=multiple-imports
@@ -19,12 +22,9 @@ HASHLENGTH = len(HASH(b'').digest())
 EMPTY_HASH = bytes(HASHLENGTH)
 CHUNKSIZE = 128
 
-def send(document=None):
+def transmit(document):
     '''
-    exchange documents with peer
-
-    QR codes sent and received start with a hash of the chunk
-    last received; the remainder is the chunk being sent
+    send document to peer
     '''
     capture = cv2.VideoCapture(0)
     window = Tk()
@@ -32,12 +32,12 @@ def send(document=None):
     label = Label(window, text='Starting...')
     label.pack()
     window.update()
-    document = document or os.devnull
     with open(document, 'rb') as senddata:
-        chunk = seen = lastseen = b''
+        hashed = chunk = seen = lastseen = b''
         while capture.isOpened():
-            if chunk == seen:
+            if hashed == seen:
                 chunk = senddata.read(CHUNKSIZE)
+                hashed = chunkhash(chunk)
                 qrshow(label, chunk)
             captured = capture.read()
             if captured[0]:
@@ -45,11 +45,43 @@ def send(document=None):
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
                 if seen != lastseen:
-                    logging.debug('seen: %s, chunk: %s, same: %s',
-                                  seen, chunk, seen == chunk)
+                    logging.debug('seen: %s, hashed: %s, same: %s',
+                                  seen, hashed, seen == hashed)
                     lastseen = seen
                 elif not chunk:
                     break
+            if cv2.waitKey(1) & 0xff == ord('q'):
+                break
+    capture.release()
+    cv2.destroyAllWindows()
+    window.destroy()
+
+def receive():
+    '''
+    receive document from peer
+    '''
+    capture = cv2.VideoCapture(0)
+    window = Tk()
+    window.geometry('+0+0')
+    label = Label(window, text='Starting...')
+    label.pack()
+    window.update()
+    document = os.path.join('received', datetime.now().isoformat())
+    with open(document, 'wb') as received:
+        seen = lastseen = b''
+        while capture.isOpened():
+            captured = capture.read()
+            if captured[0]:
+                cv2.imshow('frame captured', captured[1])
+                cv2.moveWindow('frame captured', 800, 0)
+                seen = qrdecode(Image.fromarray(captured[1]))
+                if seen != lastseen:
+                    logging.debug('seen: %s', seen)
+                    lastseen = seen
+                else:
+                    received.write(seen)
+                    hashed = chunkhash(seen)
+                    qrshow(label, hashed)
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
@@ -89,7 +121,7 @@ def qrdecode(image):
                           len(qr.data))
             return qr.data
         else:
-            logging.debug('QR code data was returned as string %r', qr.data)
+            #logging.debug('QR code data was returned as string %r', qr.data)
             for encoding in ('big5', 'utf-8', 'latin-1'):
                 try:
                     encoded = qr.data.encode(encoding)
@@ -98,7 +130,7 @@ def qrdecode(image):
                     continue
     return None
 
-def hash(data):
+def chunkhash(data):
     '''
     return binary hash of data
     '''
@@ -106,4 +138,7 @@ def hash(data):
 
 if __name__ == '__main__':
     # if no document specified, send nothing, just receive
-    send(sys.argv[1] if len(sys.argv) > 1 else None)
+    if len(sys.argv) > 1:
+        transmit(sys.argv[1])
+    else:
+        receive()
