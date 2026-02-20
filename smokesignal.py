@@ -10,7 +10,7 @@ import sys, os, logging  # pylint: disable=multiple-imports
 from datetime import datetime
 from hashlib import sha256
 from tkinter import Tk, Label
-import qrcode, cv2  # pylint: disable=multiple-imports
+import qrcode, zbar, cv2  # pylint: disable=multiple-imports
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
 from qrtools import QR
@@ -107,28 +107,23 @@ def qrdecode(image):
     '''
     get data from QR code image
 
-    qrtools tries to return data as string, presumably UTF8, and
-    only returns bytes if that fails.
-
-    can't find documentation on data_type parameter
+    >>> testdata = bytes(range(256))
+    >>> qr_image = qrcode.make(testdata)
+    >>> qrdecode(qr_image) == testdata
+    True
     '''
-    qr = QR(data='', data_type='bytes', add_bom=False)
-    decoded = qr.decode(image=image)
-    #logging.debug('decoded: %r, qr: %s', decoded, vars(qr))
-    if decoded:
-        if hasattr(qr.data, 'decode'):
-            logging.debug('QR code data was returned as %d bytes',
-                          len(qr.data))
-            return qr.data
-        else:
-            #logging.debug('QR code data was returned as string %r', qr.data)
-            for encoding in ('big5', 'utf-8', 'latin-1'):
-                try:
-                    encoded = qr.data.encode(encoding)
-                    return encoded
-                except UnicodeEncodeError:
-                    continue
-    return None
+    try:
+        pil = image.convert('L')  # to grayscale
+    except AttributeError:
+        pil = Image.fromarray(image).convert('L')
+    scanner = zbar.ImageScanner()
+    scanner.parse_config('enable')
+    raw = pil.tobytes()
+    zbar_image = zbar.Image(pil.width, pil.height, 'Y800', raw)
+    scanner.scan(zbar_image)
+    found = [(symbol.data, symbol.type) for symbol in zbar_image]
+    logging.debug('scan results: %s', found)
+    return found[0][0].encode('latin-1')
 
 def chunkhash(data):
     '''
