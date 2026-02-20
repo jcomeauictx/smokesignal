@@ -34,6 +34,7 @@ def send(document):
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
+                logging.debug('seen: %s', seen)
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
