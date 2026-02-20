@@ -45,7 +45,8 @@ def send(document=None):
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
                 if seen != lastseen:
-                    logging.debug('seen: %s, chunk: %s', seen, chunk)
+                    logging.debug('seen: %s, chunk: %s, same: %s',
+                                  seen, chunk, seen == chunk)
                     lastseen = seen
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
