@@ -13,7 +13,6 @@ from tkinter import Tk, Label
 import qrcode, zbar, cv2  # pylint: disable=multiple-imports
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
-from qrtools import QR
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
