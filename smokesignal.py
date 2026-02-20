@@ -28,7 +28,7 @@ def send(document):
         while capture.isOpened():
             if chunk == seen:
                 chunk = next(chunked, None)
-            qrshow(label, chunk)
+                qrshow(label, chunk)
             captured = capture.read()
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
@@ -60,9 +60,10 @@ def qrdecode(image):
     '''
     get text/data from QR code image
     '''
-    qr = QR(data='')
+    qr = QR(data=b'')
     decoded = qr.decode(image=image)
-    return decoded
+    #logging.debug('decoded: %s, qr: %s', decoded, vars(qr))
+    return qr.data if decoded else None
 
 def chunks(data, size=128):
     '''
