@@ -4,6 +4,8 @@ communicate visually with another computer using QR codes
 '''
 # pylint: disable=c-extension-no-member  # for cv2
 import sys, logging  # pylint: disable=multiple-imports
+from datetime import datetime
+from hashlib import sha256
 from tkinter import Tk, Label
 import qrcode, cv2  # pylint: disable=multiple-imports
 from PIL import Image
@@ -12,9 +14,15 @@ from qrtools import QR
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
-def send(document):
+HASHLENGTH = len(sha256(b'').digest())
+EMPTY_HASH = bytes(HASHLENGTH)
+
+def send(document=None):
     '''
-    send document to peer
+    exchange documents with peer
+
+    QR codes sent and received start with a hash of the chunk
+    last received; the remainder is the chunk being sent
     '''
     capture = cv2.VideoCapture(0)
     window = Tk()
@@ -76,5 +84,5 @@ def chunks(data, size=128):
         yield data[i:i + size]
 
 if __name__ == '__main__':
-    # if no document specified, send this file itself
-    send((sys.argv[1:] + [sys.argv[0]])[0])
+    # if no document specified, send nothing, just receive
+    send(sys.argv[1] if len(sys.argv) > 1 else None)
