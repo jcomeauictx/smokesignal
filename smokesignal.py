@@ -83,7 +83,13 @@ def qrdecode(image):
     decoded = qr.decode(image=image)
     #logging.debug('decoded: %r, qr: %s', decoded, vars(qr))
     if decoded:
-        return qr.data if hasattr(qr.data, 'decode') else qr.data.encode()
+        if hasattr(qr.data, 'decode'):
+            logging.debug('QR code data was returned as %d bytes',
+                          len(qr.data))
+            return qr.data
+        else:
+            logging.debug('QR code data was returned as string %r', qr.data)
+            return qr.data.encode()
     return None
 
 def chunks(stream, size=128):
