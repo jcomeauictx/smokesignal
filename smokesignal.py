@@ -121,8 +121,10 @@ def qrdecode(image):
     zbar_image = zbar.Image(pil.width, pil.height, 'Y800', raw)
     scanner.scan(zbar_image)
     found = [(symbol.data, symbol.type) for symbol in zbar_image]
-    logging.debug('scan results: %s', found)
-    return found[0][0].encode('latin-1')
+    if found:
+        logging.debug('scan results: %s', found)
+        return found[0][0].encode('latin-1')
+    return None
 
 def chunkhash(data):
     '''

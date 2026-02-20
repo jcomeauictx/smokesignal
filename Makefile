@@ -3,7 +3,7 @@ REQUISITE := python3-opencv python3-qrcode python3-qrtools \
 SCRIPTS := $(wildcard *.py)
 DOCTESTS := $(SCRIPTS:.py=.doctest)
 LINT := $(SCRIPTS:.py=.pylint)
-send: smokesignal.py /bin/bash
+send: smokesignal.py smokesignal.py
 	./$+
 receive: smokesignal.py
 	./$+
