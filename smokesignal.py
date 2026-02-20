@@ -89,7 +89,7 @@ def qrdecode(image):
             return qr.data
         else:
             logging.debug('QR code data was returned as string %r', qr.data)
-            return qr.data.encode()
+            return qr.data.encode('big5')
     return None
 
 def chunks(stream, size=128):
