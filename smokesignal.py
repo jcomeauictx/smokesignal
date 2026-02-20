@@ -11,6 +11,7 @@ import qrcode, cv2  # pylint: disable=multiple-imports
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
 from qrtools import QR
+from pyzbar import pyzbar
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
@@ -59,12 +60,14 @@ def send(document=None):
 def qrshow(label, data):
     '''
     display a QR code
+
+    pyzbar doesn't do duck typing, it requires type(image) to start with 'PIL.'
+    so we have to do an unnecessary conversion from qrcode.image.pil.PilImage
     '''
     if data:
-        image = qrcode.make(data)
+        image = qrcode.make(data).convert(mode='L')
+        logging.debug('image type: %s', type(image))
         photo = Photo(image)
-        qr = QR(data=data, data_type='bytes', add_bom=False)
-        logging.debug('qr: %s', vars(qr))
         label.configure(image=photo, data=None)
         label.image = photo  # claude: necessary to thwart garbage collection
         label.update()
@@ -81,6 +84,9 @@ def qrdecode(image):
 
     can't find documentation on data_type parameter
     '''
+    decoded = pyzbar.decode(image)
+    #logging.debug('decoded: %s', decoded)
+    return decoded
     qr = QR(data='', data_type='bytes', add_bom=False)
     decoded = qr.decode(image=image)
     #logging.debug('decoded: %r, qr: %s', decoded, vars(qr))
