@@ -78,7 +78,7 @@ def receive():
                 if seen != lastseen:
                     logging.debug('seen: %s', seen)
                     lastseen = seen
-                else:
+                elif seen is not None:
                     received.write(seen)
                     hashed = chunkhash(seen)
                     qrshow(label, hashed)
