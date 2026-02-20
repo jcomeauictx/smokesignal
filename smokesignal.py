@@ -3,7 +3,7 @@
 communicate visually with another computer using QR codes
 '''
 # pylint: disable=c-extension-no-member  # for cv2
-import sys, logging  # pylint: disable=multiple-imports
+import sys, os, logging  # pylint: disable=multiple-imports
 from datetime import datetime
 from hashlib import sha256
 from tkinter import Tk, Label
@@ -31,9 +31,10 @@ def send(document=None):
     label = Label(window, text='Starting...')
     label.pack()
     window.update()
-    with open(document, 'rb') as data:
-        chunked = chunks(data.read())
-        chunk = seen = lastseen = None
+    document = document or os.devnull
+    with open(document, 'rb') as senddata:
+        chunked = chunks(senddata)
+        chunk = seen = lastseen = b''
         while capture.isOpened():
             if chunk == seen:
                 chunk = next(chunked, None)
@@ -84,12 +85,23 @@ def qrdecode(image):
         return qr.data if hasattr(qr.data, 'decode') else qr.data.encode()
     return None
 
-def chunks(data, size=128):
+def chunks(stream, size=128):
     '''
     break a large file into chunks
     '''
-    for i in range(0, len(data), size):
-        yield data[i:i + size]
+    chunk = stream.read(size)
+    if len(chunk) < size:
+        if len(chunk) == 0:
+            raise StopIteration
+        else:
+            logging.info('short chunk of %s', stream)
+    yield chunk
+
+def hash(data):
+    '''
+    return binary hash of data
+    '''
+    return HASH(data).digest()
 
 if __name__ == '__main__':
     # if no document specified, send nothing, just receive
