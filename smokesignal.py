@@ -14,7 +14,8 @@ from qrtools import QR
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
-HASHLENGTH = len(sha256(b'').digest())
+HASH = sha256
+HASHLENGTH = len(HASH(b'').digest())
 EMPTY_HASH = bytes(HASHLENGTH)
 
 def send(document=None):
@@ -51,16 +52,16 @@ def send(document=None):
     cv2.destroyAllWindows()
     window.destroy()
 
-def qrshow(label, text):
+def qrshow(label, data):
     '''
     display a QR code
     '''
-    if text:
-        image = qrcode.make(text)
+    if data:
+        image = qrcode.make(data)
         photo = Photo(image)
-        qr = QR(data=text)
+        qr = QR(data=data, data_type='bytes', add_bom=False)
         logging.debug('qr: %s', vars(qr))
-        label.configure(image=photo, text=None)
+        label.configure(image=photo, data=None)
         label.image = photo  # claude: necessary to thwart garbage collection
         label.update()
         logging.debug('image: %s', image)
@@ -69,12 +70,19 @@ def qrshow(label, text):
 
 def qrdecode(image):
     '''
-    get text/data from QR code image
+    get data from QR code image
+
+    qrtools tries to return data as string, presumably UTF8, and
+    only returns bytes if that fails.
+
+    can't find documentation on data_type parameter
     '''
-    qr = QR(data=b'')
+    qr = QR(data='', data_type='bytes', add_bom=False)
     decoded = qr.decode(image=image)
     #logging.debug('decoded: %r, qr: %s', decoded, vars(qr))
-    return qr.data.encode('latin-1') if decoded else None
+    if decoded:
+        return qr.data if hasattr(qr.data, 'decode') else qr.data.encode()
+    return None
 
 def chunks(data, size=128):
     '''
