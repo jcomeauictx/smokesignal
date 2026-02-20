@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 HASH = sha256
 HASHLENGTH = len(HASH(b'').digest())
 EMPTY_HASH = bytes(HASHLENGTH)
+CHUNKSIZE = 128
 
 def send(document=None):
     '''
@@ -33,11 +34,10 @@ def send(document=None):
     window.update()
     document = document or os.devnull
     with open(document, 'rb') as senddata:
-        chunked = chunks(senddata)
         chunk = seen = lastseen = b''
         while capture.isOpened():
             if chunk == seen:
-                chunk = next(chunked, None)
+                chunk = senddata.read(CHUNKSIZE)
                 qrshow(label, chunk)
             captured = capture.read()
             if captured[0]:
@@ -48,6 +48,8 @@ def send(document=None):
                     logging.debug('seen: %s, chunk: %s, same: %s',
                                   seen, chunk, seen == chunk)
                     lastseen = seen
+                elif not chunk:
+                    break
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
@@ -91,18 +93,6 @@ def qrdecode(image):
             logging.debug('QR code data was returned as string %r', qr.data)
             return qr.data.encode('big5')
     return None
-
-def chunks(stream, size=128):
-    '''
-    break a large file into chunks
-    '''
-    chunk = stream.read(size)
-    if len(chunk) < size:
-        if len(chunk) == 0:
-            raise StopIteration
-        else:
-            logging.info('short chunk of %s', stream)
-    yield chunk
 
 def hash(data):
     '''
