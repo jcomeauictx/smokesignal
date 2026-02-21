@@ -62,6 +62,7 @@ def transmit(document):
                         serial = (serial + 1) % SERIAL_MODULUS
                     else:
                         logging.warning('bad data: %s', seen)
+                        raise ValueError('bad data')
                 elif not chunk:
                     logging.info('finished sending %s', document)
                     break
