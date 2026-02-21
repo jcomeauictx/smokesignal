@@ -135,7 +135,7 @@ def qrdecode(image):
     '''
     try:
         pil = image.convert('L')  # to grayscale
-    except AttributeError:
+    except AttributeError:  # cv2 frame is numpy array
         pil = Image.fromarray(image).convert('L')
     scanner = zbar.ImageScanner()
     scanner.parse_config('enable')
@@ -144,7 +144,7 @@ def qrdecode(image):
     scanner.scan(zbar_image)
     found = [(symbol.data, symbol.type) for symbol in zbar_image]
     if found:
-        logging.debug('scan results: %s', found)
+        #logging.debug('scan results: %s', found)
         return found[0][0].encode('latin-1')
     return b''
 
