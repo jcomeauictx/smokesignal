@@ -4,7 +4,7 @@ REQUIRED := python3-opencv python3-qrcode python3-qrtools \
 PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
 INSTALL := install
 ifeq ($(notdir $(PKGMGR)),apk)
-REQUIRED := $(subst python3, py3, $(REQUIRED))
+REQUIRED := py3-qrcode python3-tkinter py3-pillow
 INSTALL := add
 endif
 SCRIPTS := $(wildcard *.py)
