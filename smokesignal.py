@@ -62,7 +62,7 @@ def receive():
     capture = cv2.VideoCapture(0)
     window = Tk()
     window.geometry('+0+0')
-    label = Label(window, text='Starting...')
+    label = Label(window, text='Receiving...')
     label.pack()
     window.update()
     document = os.path.join('received', datetime.now().isoformat())
