@@ -13,7 +13,7 @@ from tkinter import Tk, Label
 try:
     import cv2
 except ImportError:
-    pass
+    pass  # not available on iSH
 import qrcode, zbar  # pylint: disable=multiple-imports
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
