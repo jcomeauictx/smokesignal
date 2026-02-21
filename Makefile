@@ -1,10 +1,10 @@
 SHELL := /bin/bash
-REQUISITE := python3-opencv python3-qrcode python3-qrtools \
+REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk
 PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
 INSTALL := install
 ifeq ($(notdir $(PKGMGR)),apk)
-REQUISITE := $(subst python3, py3, $(REQUISITE))
+REQUIRED := $(subst python3, py3, $(REQUIRED))
 INSTALL := add
 endif
 SCRIPTS := $(wildcard *.py)
@@ -18,7 +18,7 @@ send: smokesignal.py smokesignal.py
 receive: smokesignal.py
 	./$+
 prerequisites:
-	sudo $(PKGMGR) $(INSTALL) $(REQUISITE)
+	sudo $(PKGMGR) $(INSTALL) $(REQUIRED)
 %.pylint: %.py
 	pylint $<
 %.doctest: %.py
