@@ -10,7 +10,11 @@ import sys, os, logging  # pylint: disable=multiple-imports
 from datetime import datetime
 from hashlib import sha256
 from tkinter import Tk, Label
-import qrcode, zbar, cv2  # pylint: disable=multiple-imports
+try:
+    import cv2
+except ImportError:
+    pass
+import qrcode, zbar  # pylint: disable=multiple-imports
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
 
