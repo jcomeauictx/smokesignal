@@ -17,7 +17,7 @@ send: smokesignal.py smokesignal.py
 	./$+
 receive: smokesignal.py
 	./$+
-prerequisites:
+requirements:
 	sudo $(PKGMGR) $(INSTALL) $(REQUIRED)
 %.pylint: %.py
 	pylint $<
