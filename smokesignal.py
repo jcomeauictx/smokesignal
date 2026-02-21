@@ -142,7 +142,7 @@ def qrdecode(image):
     if found:
         logging.debug('scan results: %s', found)
         return found[0][0].encode('latin-1')
-    return None
+    return b''
 
 def chunkhash(data):
     '''
