@@ -48,7 +48,7 @@ def transmit(document):
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
-                if seen != lastseen:
+                if seen and seen != lastseen:
                     logging.debug('seen: %s, hashed: %s, same: %s',
                                   seen, hashed,
                                   seen[SERIAL_BYTES:] == hashed)
@@ -90,7 +90,6 @@ def receive():
                 if seen != lastseen:
                     logging.debug('seen: %s', seen)
                     lastseen = seen
-                if seen is not None:
                     if int.from_bytes(seen[:SERIAL_BYTES]) == serial + 1:
                         received.write(seen[SERIAL_BYTES:])
                         hashed = chunkhash(seen[SERIAL_BYTES:])
