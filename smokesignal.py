@@ -20,6 +20,9 @@ HASH = sha256
 HASHLENGTH = len(HASH(b'').digest())
 EMPTY_HASH = bytes(HASHLENGTH)
 CHUNKSIZE = 128
+SERIAL_BITS = 32
+SERIAL_BYTES = SERIAL_BITS // 8
+SERIAL_MODULUS = 1 << SERIAL_BITS
 
 def transmit(document):
     '''
@@ -32,12 +35,14 @@ def transmit(document):
     label.pack()
     window.update()
     with open(document, 'rb') as senddata:
+        serial = 0
         hashed = chunk = seen = lastseen = b''
         while capture.isOpened():
-            if hashed == seen:
+            if hashed == seen[:SERIAL_BYTES]:
                 chunk = senddata.read(CHUNKSIZE)
-                hashed = chunkhash(chunk)
-                qrshow(label, chunk)
+                codedata = serial.to_bytes(SERIAL_BYTES) + chunk
+                hashed = chunkhash(codedata)
+                qrshow(label, codedata)
             captured = capture.read()
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
@@ -45,9 +50,16 @@ def transmit(document):
                 seen = qrdecode(Image.fromarray(captured[1]))
                 if seen != lastseen:
                     logging.debug('seen: %s, hashed: %s, same: %s',
-                                  seen, hashed, seen == hashed)
-                    lastseen = seen
+                                  seen, hashed,
+                                  seen[SERIAL_BYTES:] == hashed)
+                    if int.from_bytes(seen[:SERIAL_BYTES]) == serial and \
+                            seen[SERIAL_BYTES:] == hashed:
+                        lastseen = seen
+                        serial = (serial + 1) % SERIAL_MODULUS
+                    else:
+                        logging.warning('bad data: %s', seen)
                 elif not chunk:
+                    logging.info('finished sending %s', document)
                     break
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
@@ -66,6 +78,7 @@ def receive():
     label.pack()
     window.update()
     document = os.path.join('received', datetime.now().isoformat())
+    serial = -1
     with open(document, 'wb') as received:
         seen = lastseen = b''
         while capture.isOpened():
@@ -77,10 +90,15 @@ def receive():
                 if seen != lastseen:
                     logging.debug('seen: %s', seen)
                     lastseen = seen
-                elif seen is not None:
-                    received.write(seen)
-                    hashed = chunkhash(seen)
-                    qrshow(label, hashed)
+                if seen is not None:
+                    if int.from_bytes(seen[:SERIAL_BYTES]) == serial + 1:
+                        received.write(seen[SERIAL_BYTES:])
+                        hashed = chunkhash(seen[SERIAL_BYTES:])
+                        codedata = seen[:SERIAL_BYTES] + hashed
+                        qrshow(label, codedata)
+                        serial = (serial + 1) % SERIAL_MODULUS
+                    else:
+                        logging.warning('packet out of order: %s', seen)
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
     capture.release()
