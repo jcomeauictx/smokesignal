@@ -42,7 +42,8 @@ def transmit(document):
         serial = 0
         hashed = chunk = seen = lastseen = b''
         while capture.isOpened():
-            if hashed == seen[:SERIAL_BYTES]:
+            if hashed == seen[SERIAL_BYTES:]:
+                logging.debug('sending chunk %d', serial)
                 chunk = senddata.read(CHUNKSIZE)
                 codedata = serial.to_bytes(SERIAL_BYTES) + chunk
                 hashed = chunkhash(codedata)
