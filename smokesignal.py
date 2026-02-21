@@ -92,12 +92,12 @@ def receive():
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
-                if seen != lastseen:
+                if seen and seen != lastseen:
                     logging.debug('seen: %s', seen)
                     lastseen = seen
                     if int.from_bytes(seen[:SERIAL_BYTES]) == serial + 1:
                         received.write(seen[SERIAL_BYTES:])
-                        hashed = chunkhash(seen[SERIAL_BYTES:])
+                        hashed = chunkhash(seen)
                         codedata = seen[:SERIAL_BYTES] + hashed
                         qrshow(label, codedata)
                         serial = (serial + 1) % SERIAL_MODULUS
