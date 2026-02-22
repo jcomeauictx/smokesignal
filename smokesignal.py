@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 HASH = sha256
 HASHLENGTH = len(HASH(b'').digest())
 EMPTY_HASH = bytes(HASHLENGTH)
-CHUNKSIZE = 128
+CHUNKSIZE = 256
 SERIAL_BITS = 32
 SERIAL_BYTES = SERIAL_BITS // 8
 SERIAL_MODULUS = 1 << SERIAL_BITS
@@ -49,13 +49,16 @@ def transmit(document):
             if hashed == seen[SERIAL_BYTES:]:
                 logging.debug('sending chunk %d', serial)
                 chunk = senddata.read(CHUNKSIZE)
-                codedata = serial.to_bytes(SERIAL_BYTES) + chunk
-                hashed = chunkhash(codedata)
-                qrshow(label, codedata)
+                if chunk:
+                    codedata = serial.to_bytes(SERIAL_BYTES) + chunk
+                    hashed = chunkhash(codedata)
+                    qrshow(label, codedata)
+                else:
+                    logging.info('no more data')
             captured = capture.read()
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
-                cv2.moveWindow('frame captured', 800, 0)
+                cv2.moveWindow('frame captured', 1000, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
                 if seen and seen != lastseen:
                     logging.debug('seen: %s, hashed: %s, same: %s',
@@ -119,7 +122,11 @@ def qrshow(label, data):
     display a QR code
     '''
     if data:
-        image = qrcode.make(data)
+        try:
+            image = qrcode.make(data)
+        except ValueError:
+            logging.error('cannot make %r into barcode', data)
+            raise
         logging.debug('image type: %s', type(image))
         photo = Photo(image)
         label.configure(image=photo, data=None)
