@@ -46,7 +46,8 @@ def transmit(document):
         serial = 0
         hashed = chunk = seen = lastseen = b''
         while capture.isOpened():
-            if hashed == seen[:SERIAL_BYTES]:
+            if hashed == seen[SERIAL_BYTES:]:
+                logging.debug('sending chunk %d', serial)
                 chunk = senddata.read(CHUNKSIZE)
                 codedata = serial.to_bytes(SERIAL_BYTES) + chunk
                 hashed = chunkhash(codedata)
@@ -66,6 +67,7 @@ def transmit(document):
                         serial = (serial + 1) % SERIAL_MODULUS
                     else:
                         logging.warning('bad data: %s', seen)
+                        raise ValueError('bad data')
                 elif not chunk:
                     logging.info('finished sending %s', document)
                     break
@@ -95,12 +97,12 @@ def receive():
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 800, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
-                if seen != lastseen:
+                if seen and seen != lastseen:
                     logging.debug('seen: %s', seen)
                     lastseen = seen
                     if int.from_bytes(seen[:SERIAL_BYTES]) == serial + 1:
                         received.write(seen[SERIAL_BYTES:])
-                        hashed = chunkhash(seen[SERIAL_BYTES:])
+                        hashed = chunkhash(seen)
                         codedata = seen[:SERIAL_BYTES] + hashed
                         qrshow(label, codedata)
                         serial = (serial + 1) % SERIAL_MODULUS
@@ -138,14 +140,14 @@ def qrdecode(image):
     '''
     try:
         pil = image.convert('L')  # to grayscale
-    except AttributeError:
+    except AttributeError:  # cv2 frame is numpy array
         pil = Image.fromarray(image).convert('L')
     raw = pil.tobytes()
     zbar_image = zbar.Image(pil.width, pil.height, 'Y800', raw)
     scanner.scan(zbar_image)
     found = [(symbol.data, symbol.type) for symbol in zbar_image]
     if found:
-        logging.debug('scan results: %s', found)
+        #logging.debug('scan results: %s', found)
         return found[0][0].encode('latin-1')
     return b''
 
