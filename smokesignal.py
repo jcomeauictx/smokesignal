@@ -144,7 +144,7 @@ def qrdecode(image):
         pil = Image.fromarray(image).convert('L')
     raw = pil.tobytes()
     zbar_image = zbar.Image(pil.width, pil.height, 'Y800', raw)
-    scanner.scan(zbar_image)
+    SCANNER.scan(zbar_image)
     found = [(symbol.data, symbol.type) for symbol in zbar_image]
     if found:
         #logging.debug('scan results: %s', found)

@@ -13,7 +13,7 @@ LINT := $(SCRIPTS:.py=.pylint)
 ifneq ($(SHOWENV),)
 export
 endif
-send: smokesignal.py smokesignal.py
+send: smokesignal.py /bin/bash
 	./$+
 receive: smokesignal.py
 	./$+
