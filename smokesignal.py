@@ -27,6 +27,10 @@ CHUNKSIZE = 128
 SERIAL_BITS = 32
 SERIAL_BYTES = SERIAL_BITS // 8
 SERIAL_MODULUS = 1 << SERIAL_BITS
+SCANNER = zbar.ImageScanner()
+SCANNER.parse_config('enable')
+# set QR codes to be read as pure binary
+SCANNER.set_config(zbar.Symbol.QRCODE, zbar.Config.BINARY, 1)
 
 def transmit(document):
     '''
@@ -136,8 +140,6 @@ def qrdecode(image):
         pil = image.convert('L')  # to grayscale
     except AttributeError:
         pil = Image.fromarray(image).convert('L')
-    scanner = zbar.ImageScanner()
-    scanner.parse_config('enable')
     raw = pil.tobytes()
     zbar_image = zbar.Image(pil.width, pil.height, 'Y800', raw)
     scanner.scan(zbar_image)
