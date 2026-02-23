@@ -5,11 +5,11 @@ The qrcode library's Polynomial.__mod__ crashes with ValueError("glog(0)")
 when data has long runs of zero bytes, because glog(0) is undefined in GF(256).
 This patch skips leading zero coefficients before computing the ratio.
 
->>> import qrcode
 >>> qr_image = qrcode.make(bytes(260))
 >>> qr_image is not None
 True
 '''
+import qrcode  # pylint: disable=unused-import
 from qrcode.base import Polynomial, glog, gexp
 
 

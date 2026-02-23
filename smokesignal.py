@@ -14,9 +14,10 @@ try:
     import cv2
 except ImportError:
     pass  # not available on iSH
-import qrcode, zbar  # pylint: disable=multiple-imports
+import zbar
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
+from monkeypatch import qrcode
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 
