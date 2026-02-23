@@ -33,6 +33,28 @@ SCANNER.parse_config('enable')
 # set QR codes to be read as pure binary
 SCANNER.set_config(zbar.Symbol.QRCODE, zbar.Config.BINARY, 1)
 
+def transceive():
+    '''
+    listen on local socket for files to transmit, and watch for incoming
+    barcodes from peer
+    '''
+    capture = cv2.VideoCapture(0)
+    window = Tk()
+    window.geometry('+0+0')
+    label = Label(window, text='Transceiving...')
+    label.pack()
+    window.update()
+    seen = lastseen = b''
+    while capture.isOpened():
+        if captured[0]:
+            captured = capture.read()
+            cv2.imshow('frame captured', captured[1])
+            cv2.moveWindow('frame captured', 1000, 0)
+            seen = qrdecode(Image.fromarray(captured[1]))
+            if seen != lastseen:
+                logging.debug('seen: %r', seen)
+                lastseen = seen
+
 def transmit(document):
     '''
     send document to peer
@@ -40,7 +62,7 @@ def transmit(document):
     capture = cv2.VideoCapture(0)
     window = Tk()
     window.geometry('+0+0')
-    label = Label(window, text='Starting...')
+    label = Label(window, text='Transmitting...')
     label.pack()
     window.update()
     with open(document, 'rb') as senddata:
@@ -190,8 +212,13 @@ def chunkhash(data):
     return HASH(data).digest()
 
 if __name__ == '__main__':
-    # if no document specified, send nothing, just receive
-    if len(sys.argv) > 1:
-        transmit(sys.argv[1])
+    callables = [
+        (key, value) for key, value in locals().items() if callable(value)
+    ]
+    logging.debug('callables: %s', callables)
+    if len(sys.argv) < 2:
+        logging.error('Must specify command and optional args')
+    elif sys.argv[1] not in ('transmit', 'receive', 'transceive'):
+        logging.error('%r not a recognized command', sys.argv[1])
     else:
-        receive()
+        eval(sys.argv[1])(*sys.argv[2:])  # pylint: disable=eval-used

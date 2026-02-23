@@ -13,10 +13,12 @@ LINT := $(SCRIPTS:.py=.pylint)
 ifneq ($(SHOWENV),)
 export
 endif
-send: smokesignal.py /bin/bash
-	./$+
+transmit: smokesignal.py /bin/bash
+	./$< $@ $(word 2, $+)
 receive: smokesignal.py
-	./$+
+	./$< $@
+transceive: smokesignal.py
+	./$< $@
 requirements:
 	sudo $(PKGMGR) $(INSTALL) $(REQUIRED)
 %.pylint: %.py
