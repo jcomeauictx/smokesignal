@@ -54,6 +54,11 @@ def transceive():
             if seen != lastseen:
                 logging.debug('seen: %r', seen)
                 lastseen = seen
+        if cv2.waitKey(1) & 0xff == ord('q'):
+            break
+    capture.release()
+    cv2.destroyAllWindows()
+    window.destroy()
 
 def transmit(document):
     '''
