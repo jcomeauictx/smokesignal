@@ -46,8 +46,8 @@ def transceive():
     window.update()
     seen = lastseen = b''
     while capture.isOpened():
+        captured = capture.read()
         if captured[0]:
-            captured = capture.read()
             cv2.imshow('frame captured', captured[1])
             cv2.moveWindow('frame captured', 1000, 0)
             seen = qrdecode(Image.fromarray(captured[1]))
