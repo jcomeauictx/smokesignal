@@ -6,7 +6,8 @@ QR codes sent and received start with a hash of the chunk
 last received; the remainder is the chunk being sent
 '''
 # pylint: disable=c-extension-no-member  # for cv2
-import sys, os, logging  # pylint: disable=multiple-imports
+import sys, os, json, logging, posixpath  # pylint: disable=multiple-imports
+# Windows should be able to handle posixpath, and we need it for URLs
 from datetime import datetime
 from hashlib import sha256
 from tkinter import Tk, Label
@@ -14,7 +15,7 @@ try:
     import cv2
 except ImportError:
     pass  # not available on iSH
-import zbar
+import zbar, zmq  # pylint: disable=multiple-imports
 from PIL import Image
 from PIL.ImageTk import PhotoImage as Photo
 from monkeypatch import qrcode
@@ -32,6 +33,9 @@ SCANNER = zbar.ImageScanner()
 SCANNER.parse_config('enable')
 # set QR codes to be read as pure binary
 SCANNER.set_config(zbar.Symbol.QRCODE, zbar.Config.BINARY, 1)
+PIPE = posixpath.join(posixpath.abspath(os.curdir), 'command.pipe')
+URL = 'ipc://' + PIPE
+logging.info('IPC pipe: %s, url: %s', PIPE, URL)
 
 def transceive():
     '''
@@ -45,20 +49,29 @@ def transceive():
     label.pack()
     window.update()
     seen = lastseen = b''
-    while capture.isOpened():
-        captured = capture.read()
-        if captured[0]:
-            cv2.imshow('frame captured', captured[1])
-            cv2.moveWindow('frame captured', 1000, 0)
-            seen = qrdecode(Image.fromarray(captured[1]))
-            if seen != lastseen:
-                logging.debug('seen: %r', seen)
-                lastseen = seen
-        if cv2.waitKey(1) & 0xff == ord('q'):
-            break
-    capture.release()
-    cv2.destroyAllWindows()
-    window.destroy()
+    try:
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.bind(URL)
+        while capture.isOpened():
+            captured = capture.read()
+            if captured[0]:
+                cv2.imshow('frame captured', captured[1])
+                cv2.moveWindow('frame captured', 1000, 0)
+                seen = qrdecode(Image.fromarray(captured[1]))
+                if seen != lastseen:
+                    logging.debug('seen: %r', seen)
+                    lastseen = seen
+            if cv2.waitKey(1) & 0xff == ord('q'):
+                break
+    finally:
+        socket.close()
+        context.term()
+        if posixpath.exists(PIPE):
+            os.remove(PIPE)
+        capture.release()
+        cv2.destroyAllWindows()
+        window.destroy()
 
 def transmit(document):
     '''
