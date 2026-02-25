@@ -37,8 +37,10 @@ PIPE = posixpath.join(posixpath.abspath(os.curdir), 'command.pipe')
 URL = 'ipc://' + PIPE
 logging.info('IPC pipe: %s, url: %s', PIPE, URL)
 
-class TransceiveQRCode():
+class Puff():
     '''
+    data and metadata for a single transceive QR code
+
     unlike transmit() and receive(), which use different sized QR codes,
     transceive sends and receives codes of the same length:
     send_serial, SERIAL_BYTES bytes
@@ -47,6 +49,23 @@ class TransceiveQRCode():
     received_chunk, CHUNKSIZE bytes
     hashed, HASHLENGTH bytes  # hash of what peer saw
     '''
+    def __init__(self, **kwargs):
+        self.send_serial = kwargs.get('send_serial', 0)
+        self.received_serial = kwargs.get('received_serial', 0)
+        self.send_chunk = kwargs.get('send_chunk', b'')
+        self.received_chunk = kwargs.get('received_chunk', b'')
+        self.hashed = kwargs.get('hashed', EMPTY_HASH)
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def pack(self):
+        return (self.send_serial.to_bytes(SERIAL_BYTES) +
+            self.send_chunk.rjust(CHUNKSIZE, b'\0') +
+            self.received_serial.to_bytes(SERIAL_BYTES) +
+            self.received_chunk.rjust(CHUNKSIZE, b'\0') +
+            self.hashed)
 
 def transceive():
     '''
