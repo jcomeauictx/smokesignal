@@ -48,7 +48,7 @@ def transceive():
     label = Label(window, text='Transceiving...')
     label.pack()
     window.update()
-    seen = lastseen = b''
+    seen = lastseen = chunk = b''
     send_document = receive_document = None
     send_serial = receive_serial = -1
     try:
@@ -69,6 +69,20 @@ def transceive():
             if socket.poll(1):
                 send_document = socket.recv_string()
                 logging.info('requested to send document %s', send_document)
+                send_serial = 0
+            if send_document:
+                with open(send_document, 'rb') as senddata:
+                    senddata.seek(send_serial * CHUNKSIZE)
+                    chunk = senddata.read(CHUNKSIZE)
+                if chunk:
+                    codedata = send_serial.to_bytes(SERIAL_BYTES) + chunk
+                    hashed = chunkhash(codedata)
+                    qrshow(label, codedata)
+                    send_serial = (send_serial + 1) % SERIAL_MODULUS
+                else:
+                    logging.info('no more data')
+                    send_document = None
+                    send_serial = -1
     finally:
         socket.close()
         context.term()
