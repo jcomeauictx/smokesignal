@@ -37,6 +37,17 @@ PIPE = posixpath.join(posixpath.abspath(os.curdir), 'command.pipe')
 URL = 'ipc://' + PIPE
 logging.info('IPC pipe: %s, url: %s', PIPE, URL)
 
+class TransceiveQRCode():
+    '''
+    unlike transmit() and receive(), which use different sized QR codes,
+    transceive sends and receives codes of the same length:
+    send_serial, SERIAL_BYTES bytes
+    send_chunk, CHUNKSIZE bytes
+    received_serial, SERIAL_BYTES bytes
+    received_chunk, CHUNKSIZE bytes
+    hashed, HASHLENGTH bytes  # hash of what peer saw
+    '''
+
 def transceive():
     '''
     listen on local socket for files to transmit, and watch for incoming
@@ -50,7 +61,7 @@ def transceive():
     window.update()
     seen = lastseen = chunk = b''
     send_document = receive_document = None
-    send_serial = receive_serial = -1
+    send_serial = receive_serial = 0
     try:
         context = zmq.Context()
         socket = context.socket(zmq.REP)
@@ -73,9 +84,9 @@ def transceive():
             if send_document:
                 with open(send_document, 'rb') as senddata:
                     senddata.seek(send_serial * CHUNKSIZE)
-                    chunk = senddata.read(CHUNKSIZE)
+                    send_chunk = senddata.read(CHUNKSIZE)
                 if chunk:
-                    codedata = send_serial.to_bytes(SERIAL_BYTES) + chunk
+                    codedata = send_serial.to_bytes(SERIAL_BYTES) + send_chunk
                     hashed = chunkhash(codedata)
                     qrshow(label, codedata)
                     send_serial = (send_serial + 1) % SERIAL_MODULUS
