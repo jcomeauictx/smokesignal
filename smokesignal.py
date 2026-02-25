@@ -49,6 +49,8 @@ def transceive():
     label.pack()
     window.update()
     seen = lastseen = b''
+    send_document = receive_document = None
+    send_serial = receive_serial = -1
     try:
         context = zmq.Context()
         socket = context.socket(zmq.REP)
@@ -64,6 +66,9 @@ def transceive():
                     lastseen = seen
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
+            if socket.poll(1):
+                send_document = socket.recv_string()
+                logging.info('requested to send document %s', send_document)
     finally:
         socket.close()
         context.term()
@@ -72,6 +77,19 @@ def transceive():
         capture.release()
         cv2.destroyAllWindows()
         window.destroy()
+
+def sendfile(document):
+    '''
+    tell transceiver to send a document
+    '''
+    try:
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.connect(URL)
+        socket.send_string(document)
+    finally:
+        socket.close()
+        context.term()
 
 def transmit(document):
     '''
@@ -236,7 +254,7 @@ if __name__ == '__main__':
     logging.debug('callables: %s', callables)
     if len(sys.argv) < 2:
         logging.error('Must specify command and optional args')
-    elif sys.argv[1] not in ('transmit', 'receive', 'transceive'):
+    elif sys.argv[1] not in ('transmit', 'receive', 'transceive', 'sendfile'):
         logging.error('%r not a recognized command', sys.argv[1])
     else:
         eval(sys.argv[1])(*sys.argv[2:])  # pylint: disable=eval-used
