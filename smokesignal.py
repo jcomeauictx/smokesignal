@@ -61,6 +61,12 @@ class Puff():
             setattr(self, key, value)
 
     def pack(self):
+        '''
+        pack data into correct form for QR code
+
+        >>> len(Puff().pack()) == SERIAL_BYTES * 2 + CHUNKSIZE * 2 + HASHLENGTH
+        True
+        '''
         return (self.send_serial.to_bytes(SERIAL_BYTES) +
             self.send_chunk.rjust(CHUNKSIZE, b'\0') +
             self.received_serial.to_bytes(SERIAL_BYTES) +
