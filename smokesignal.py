@@ -100,7 +100,7 @@ class Puff():
                 )
                 offset += LENGTH_BYTES
                 self.received_chunk = value[offset:offset + length]
-                self.hashed = value[-HASHLENGTH]
+                self.hashed = value[-HASHLENGTH:]
             else:
                 logging.warning('not setting unknown attribute %s', key)
 
