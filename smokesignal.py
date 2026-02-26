@@ -28,6 +28,16 @@ EMPTY_HASH = bytes(HASHLENGTH)
 CHUNKSIZE = 256
 SERIAL_BITS = 32
 SERIAL_BYTES = SERIAL_BITS // 8
+# store actual size of packet, since it will be padded for QR code
+# 32 bits is probably way overkill, but think big, tech will improve
+LENGTH_BITS = 32
+LENGTH_BYTES = LENGTH_BITS // 8
+PACKET_LENGTH = (
+    SERIAL_BYTES * 2 +
+    LENGTH_BYTES * 2 +
+    CHUNKSIZE * 2 +
+    HASHLENGTH
+)
 SERIAL_MODULUS = 1 << SERIAL_BITS
 SCANNER = zbar.ImageScanner()
 SCANNER.parse_config('enable')
@@ -44,8 +54,10 @@ class Puff():
     unlike transmit() and receive(), which use different sized QR codes,
     transceive sends and receives codes of the same length:
     send_serial, SERIAL_BYTES bytes
+    send_length, LENGTH_BYTES bytes
     send_chunk, CHUNKSIZE bytes
     received_serial, SERIAL_BYTES bytes
+    received_length, LENGTH_BYTES bytes
     received_chunk, CHUNKSIZE bytes
     hashed, HASHLENGTH bytes  # hash of what peer saw
     '''
@@ -53,7 +65,9 @@ class Puff():
         self.send_serial = kwargs.get('send_serial', 0)
         self.received_serial = kwargs.get('received_serial', 0)
         self.send_chunk = kwargs.get('send_chunk', b'')
+        self.send_length = len(self.send_chunk)
         self.received_chunk = kwargs.get('received_chunk', b'')
+        self.received_length = len(self.received_chunk)
         self.hashed = kwargs.get('hashed', EMPTY_HASH)
         # metadata, not part of QR code
         self.send_document = kwargs.get('send_document', None)
@@ -65,17 +79,22 @@ class Puff():
         '''
         for key, value in kwargs.items():
             setattr(self, key, value)
+            if key.endswith('chunk'):
+                # set associated length attribute
+                setattr(self, key[:-len('chunk')] + 'length', len(value))
 
     def pack(self):
         '''
         pack data into correct form for QR code
 
-        >>> len(Puff().pack()) == SERIAL_BYTES * 2 + CHUNKSIZE * 2 + HASHLENGTH
+        >>> len(Puff().pack()) == PACKET_LENGTH
         True
         '''
         return (self.send_serial.to_bytes(SERIAL_BYTES) +
+            self.send_length.to_bytes(LENGTH_BYTES) +
             self.send_chunk.rjust(CHUNKSIZE, b'\0') +
             self.received_serial.to_bytes(SERIAL_BYTES) +
+            self.received_length.to_bytes(LENGTH_BYTES) +
             self.received_chunk.rjust(CHUNKSIZE, b'\0') +
             self.hashed)
 
@@ -87,9 +106,13 @@ class Puff():
 
     def update_hash(self):
         '''
-        update self.hashed with values of send_serial and send_chunk
+        update self.hashed with values of send_{serial,length,chunk}
         '''
-        data = self.send_serial.to_bytes(SERIAL_BYTES) + self.send_chunk
+        data = (
+            self.send_serial.to_bytes(SERIAL_BYTES) +
+            self.send_length.to_bytes(LENGTH_BYTES) +
+            self.send_chunk
+        )
         self.hashed = chunkhash(data)
 
 def transceive():
