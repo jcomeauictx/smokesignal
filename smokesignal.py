@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 HASH = sha256
 HASHLENGTH = len(HASH(b'').digest())
 EMPTY_HASH = bytes(HASHLENGTH)
-CHUNKSIZE = 256
+CHUNKSIZE = 128
 SERIAL_BITS = 32
 SERIAL_BYTES = SERIAL_BITS // 8
 # store actual size of packet, since it will be padded for QR code
