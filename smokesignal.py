@@ -159,6 +159,7 @@ def transceive():
     label.pack()
     window.update()
     seen = lastseen = b''
+    shown = None  # barcode being displayed
     puff = Puff()
     try:
         context = zmq.Context()
@@ -175,6 +176,7 @@ def transceive():
                     puff.update(seen=seen)
                     if puff.hashed == puff.send_hash():
                         logging.debug('our last packet was received intact')
+                        puff.send_serial
                         puff.bump_serial()
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
@@ -182,18 +184,18 @@ def transceive():
                 puff.update(send_document=socket.recv_string(), send_serial=0)
                 logging.info('requested to send document %s',
                              puff.send_document)
-            if puff.send_document:
+            if puff.send_document and shown != puff.pack():
                 with open(puff.send_document, 'rb') as senddata:
                     senddata.seek(puff.send_serial * CHUNKSIZE)
                     puff.update(send_chunk=senddata.read(CHUNKSIZE))
                 if puff.send_chunk:
-                    qrshow(label, puff.pack())
+                    shown = qrshow(label, puff.pack())
                 else:
                     logging.info('no more data')
                     puff.update(send_document=None, send_serial=0)
             elif seen and seen != lastseen:
                 logging.debug('showing qrcode for %s', puff)
-                qrshow(label, puff.pack())
+                shown = qrshow(label, puff.pack())
                 lastseen = seen
     finally:
         socket.close()
@@ -320,6 +322,8 @@ def qrshow(label, data):
         logging.debug('image: %s', image)
         code = qrdecode(image)
         logging.info('code: %r', code)
+        return data
+    return None
 
 def qrdecode(image):
     r'''
