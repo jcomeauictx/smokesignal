@@ -154,7 +154,7 @@ def transceive():
     '''
     capture = cv2.VideoCapture(0)
     window = Tk()
-    window.geometry('+0+0')
+    window.geometry('+0-0')
     label = Label(window, text='Transceiving...')
     label.pack()
     window.update()
