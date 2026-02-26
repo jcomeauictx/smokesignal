@@ -161,7 +161,10 @@ def transceive():
                 seen = qrdecode(Image.fromarray(captured[1]))
                 if seen != lastseen:
                     logging.debug('seen: %r', seen)
-                    lastseen = seen
+                    puff.update(seen=seen)
+                    if puff.hashed == puff.send_hash():
+                        puff.bump_serial()
+                        lastseen = seen
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
             if socket.poll(1):
@@ -174,7 +177,6 @@ def transceive():
                     puff.update(send_chunk=senddata.read(CHUNKSIZE))
                 if puff.send_chunk:
                     qrshow(label, puff.pack())
-                    puff.bump_serial()
                 else:
                     logging.info('no more data')
                     puff.update(send_document=None, send_serial=0)
