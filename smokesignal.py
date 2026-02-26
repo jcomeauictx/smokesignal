@@ -63,8 +63,8 @@ class Puff():
     '''
     def __init__(self, **kwargs):
         self.send_serial = kwargs.get('send_serial', 0)
-        self.received_serial = kwargs.get('received_serial', 0)
         self.send_chunk = kwargs.get('send_chunk', b'')
+        self.received_serial = kwargs.get('received_serial', 0)
         self.received_chunk = kwargs.get('received_chunk', b'')
         self.hashed = kwargs.get('hashed', EMPTY_HASH)
         # metadata, not part of QR code
@@ -76,7 +76,22 @@ class Puff():
         fill in values that weren't available on instantiation
         '''
         for key, value in kwargs.items():
-            setattr(self, key, value)
+            if hasattr(self, key):
+                setattr(self, key, value)
+            elif key == 'seen':
+                offset = SERIAL_BYTES + LENGTH_BYTES + CHUNKSIZE
+                self.received_serial = int.from_bytes(
+                    value[offset:offset + SERIAL_BYTES]
+                )
+                offset += SERIAL_BYTES
+                length = int.from_bytes(
+                    value[offset:offset + LENGTH_BYTES]
+                )
+                offset += LENGTH_BYTES
+                self.received_chunk = value[offset:offset + length]
+                self.hashed = value[-HASHLENGTH]
+            else:
+                logging.warning('not setting unknown attribute %s', key)
 
     def pack(self):
         '''
@@ -99,16 +114,27 @@ class Puff():
         '''
         self.send_serial = (self.send_serial + 1) % SERIAL_MODULUS
 
-    def update_hash(self):
+    def send_hash(self):
         '''
-        update self.hashed with values of send_{serial,length,chunk}
+        get hash digest with values of send_{serial,length,chunk}
         '''
         data = (
             self.send_serial.to_bytes(SERIAL_BYTES) +
             len(self.send_chunk).to_bytes(LENGTH_BYTES) +
             self.send_chunk
         )
-        self.hashed = chunkhash(data)
+        return chunkhash(data)
+
+    def received_hash(self):
+        '''
+        get hash digest with values from received packet
+        '''
+        data = (
+            self.received_serial.to_bytes(SERIAL_BYTES) +
+            len(self.received_chunk).to_bytes(LENGTH_BYTES) +
+            self.received_chunk
+        )
+        return chunkhash(data)
 
 def transceive():
     '''
@@ -147,7 +173,6 @@ def transceive():
                     senddata.seek(puff.send_serial * CHUNKSIZE)
                     puff.update(send_chunk=senddata.read(CHUNKSIZE))
                 if puff.send_chunk:
-                    puff.update_hash()
                     qrshow(label, puff.pack())
                     puff.bump_serial()
                 else:
