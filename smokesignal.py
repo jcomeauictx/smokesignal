@@ -89,7 +89,7 @@ class Puff():
         '''
         update self.hashed with values of send_serial and send_chunk
         '''
-        data = self.send_serial + self.send_chunk
+        data = self.send_serial.to_bytes(SERIAL_BYTES) + self.send_chunk
         self.hashed = chunkhash(data)
 
 def transceive():
