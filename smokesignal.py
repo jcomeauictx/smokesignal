@@ -90,6 +90,8 @@ class Puff():
             if hasattr(self, key):
                 setattr(self, key, value)
             elif key == 'seen':
+                # update Puff with fields sent by peer
+                # update 'hashed' field with hash of what we saw
                 offset = SERIAL_BYTES + LENGTH_BYTES + CHUNKSIZE
                 self.received_serial = int.from_bytes(
                     value[offset:offset + SERIAL_BYTES]
@@ -100,7 +102,7 @@ class Puff():
                 )
                 offset += LENGTH_BYTES
                 self.received_chunk = value[offset:offset + length]
-                self.hashed = value[-HASHLENGTH:]
+                self.hashed = self.received_hash()
             else:
                 logging.warning('not setting unknown attribute %s', key)
 
@@ -174,7 +176,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                 if seen and seen != lastseen:
                     logging.debug('seen: %r', seen)
                     puff.update(seen=seen)
-                    if puff.hashed == puff.send_hash():
+                    if seen[-HASHLENGTH:] == puff.send_hash():
                         logging.debug('our last packet was received intact')
                         puff.bump_serial()
             if cv2.waitKey(1) & 0xff == ord('q'):
