@@ -65,9 +65,7 @@ class Puff():
         self.send_serial = kwargs.get('send_serial', 0)
         self.received_serial = kwargs.get('received_serial', 0)
         self.send_chunk = kwargs.get('send_chunk', b'')
-        self.send_length = len(self.send_chunk)
         self.received_chunk = kwargs.get('received_chunk', b'')
-        self.received_length = len(self.received_chunk)
         self.hashed = kwargs.get('hashed', EMPTY_HASH)
         # metadata, not part of QR code
         self.send_document = kwargs.get('send_document', None)
@@ -79,9 +77,6 @@ class Puff():
         '''
         for key, value in kwargs.items():
             setattr(self, key, value)
-            if key.endswith('chunk'):
-                # set associated length attribute
-                setattr(self, key[:-len('chunk')] + 'length', len(value))
 
     def pack(self):
         '''
@@ -91,10 +86,10 @@ class Puff():
         True
         '''
         return (self.send_serial.to_bytes(SERIAL_BYTES) +
-            self.send_length.to_bytes(LENGTH_BYTES) +
+            len(self.send_chunk).to_bytes(LENGTH_BYTES) +
             self.send_chunk.rjust(CHUNKSIZE, b'\0') +
             self.received_serial.to_bytes(SERIAL_BYTES) +
-            self.received_length.to_bytes(LENGTH_BYTES) +
+            len(self.received_chunk).to_bytes(LENGTH_BYTES) +
             self.received_chunk.rjust(CHUNKSIZE, b'\0') +
             self.hashed)
 
@@ -110,7 +105,7 @@ class Puff():
         '''
         data = (
             self.send_serial.to_bytes(SERIAL_BYTES) +
-            self.send_length.to_bytes(LENGTH_BYTES) +
+            len(self.send_chunk).to_bytes(LENGTH_BYTES) +
             self.send_chunk
         )
         self.hashed = chunkhash(data)
