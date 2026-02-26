@@ -6,7 +6,7 @@ QR codes sent and received start with a hash of the chunk
 last received; the remainder is the chunk being sent
 '''
 # pylint: disable=c-extension-no-member  # for cv2
-import sys, os, json, logging, posixpath  # pylint: disable=multiple-imports
+import sys, os, logging, posixpath  # pylint: disable=multiple-imports
 # Windows should be able to handle posixpath, and we need it for URLs
 from datetime import datetime
 from hashlib import sha256
@@ -55,8 +55,14 @@ class Puff():
         self.send_chunk = kwargs.get('send_chunk', b'')
         self.received_chunk = kwargs.get('received_chunk', b'')
         self.hashed = kwargs.get('hashed', EMPTY_HASH)
+        # metadata, not part of QR code
+        self.send_document = kwargs.get('send_document', None)
+        self.received_document = kwargs.get('received_document', None)
 
     def update(self, **kwargs):
+        '''
+        fill in values that weren't available on instantiation
+        '''
         for key, value in kwargs.items():
             setattr(self, key, value)
 
@@ -73,6 +79,19 @@ class Puff():
             self.received_chunk.rjust(CHUNKSIZE, b'\0') +
             self.hashed)
 
+    def bump_serial(self):
+        '''
+        increment send_serial
+        '''
+        self.send_serial = (self.send_serial + 1) % SERIAL_MODULUS
+
+    def update_hash(self):
+        '''
+        update self.hashed with values of send_serial and send_chunk
+        '''
+        data = self.send_serial + self.send_chunk
+        self.hashed = chunkhash(data)
+
 def transceive():
     '''
     listen on local socket for files to transmit, and watch for incoming
@@ -84,9 +103,8 @@ def transceive():
     label = Label(window, text='Transceiving...')
     label.pack()
     window.update()
-    seen = lastseen = chunk = b''
-    send_document = receive_document = None
-    send_serial = receive_serial = 0
+    seen = lastseen = b''
+    puff = Puff()
     try:
         context = zmq.Context()
         socket = context.socket(zmq.REP)
@@ -103,22 +121,20 @@ def transceive():
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
             if socket.poll(1):
-                send_document = socket.recv_string()
-                logging.info('requested to send document %s', send_document)
-                send_serial = 0
-            if send_document:
-                with open(send_document, 'rb') as senddata:
-                    senddata.seek(send_serial * CHUNKSIZE)
-                    send_chunk = senddata.read(CHUNKSIZE)
-                if chunk:
-                    codedata = send_serial.to_bytes(SERIAL_BYTES) + send_chunk
-                    hashed = chunkhash(codedata)
-                    qrshow(label, codedata)
-                    send_serial = (send_serial + 1) % SERIAL_MODULUS
+                puff.update(send_document=socket.recv_string(), send_serial=0)
+                logging.info('requested to send document %s',
+                             puff.send_document)
+            if puff.send_document:
+                with open(puff.send_document, 'rb') as senddata:
+                    senddata.seek(puff.send_serial * CHUNKSIZE)
+                    puff.update(send_chunk=senddata.read(CHUNKSIZE))
+                if puff.send_chunk:
+                    puff.update_hash()
+                    qrshow(label, puff.pack())
+                    puff.bump_serial()
                 else:
                     logging.info('no more data')
-                    send_document = None
-                    send_serial = -1
+                    puff.update(send_document=None, send_serial=0)
     finally:
         socket.close()
         context.term()
