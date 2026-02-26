@@ -159,12 +159,12 @@ def transceive():
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 1000, 0)
                 seen = qrdecode(Image.fromarray(captured[1]))
-                if seen != lastseen:
+                if seen and seen != lastseen:
                     logging.debug('seen: %r', seen)
                     puff.update(seen=seen)
                     if puff.hashed == puff.send_hash():
+                        logging.debug('our last packet was received intact')
                         puff.bump_serial()
-                        lastseen = seen
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
             if socket.poll(1):
@@ -180,6 +180,9 @@ def transceive():
                 else:
                     logging.info('no more data')
                     puff.update(send_document=None, send_serial=0)
+            elif seen and seen != lastseen:
+                qrshow(label, puff.pack())
+                lastseen = seen
     finally:
         socket.close()
         context.term()
