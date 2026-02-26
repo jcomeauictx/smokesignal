@@ -147,7 +147,7 @@ class Puff():
         )
         return chunkhash(data)
 
-def transceive():
+def transceive():  # pylint: disable=too-many-branches, too-many-statements
     '''
     listen on local socket for files to transmit, and watch for incoming
     barcodes from peer
@@ -176,7 +176,6 @@ def transceive():
                     puff.update(seen=seen)
                     if puff.hashed == puff.send_hash():
                         logging.debug('our last packet was received intact')
-                        puff.send_serial
                         puff.bump_serial()
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
@@ -189,14 +188,16 @@ def transceive():
                     senddata.seek(puff.send_serial * CHUNKSIZE)
                     puff.update(send_chunk=senddata.read(CHUNKSIZE))
                 if puff.send_chunk:
-                    shown = qrshow(label, puff.pack())
+                    shown = True
                 else:
                     logging.info('no more data')
                     puff.update(send_document=None, send_serial=0)
             elif seen and seen != lastseen:
                 logging.debug('showing qrcode for %s', puff)
-                shown = qrshow(label, puff.pack())
+                shown = True
                 lastseen = seen
+            if shown is True:
+                shown = qrshow(label, puff.pack())
     finally:
         socket.close()
         context.term()
