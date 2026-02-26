@@ -71,6 +71,17 @@ class Puff():
         self.send_document = kwargs.get('send_document', None)
         self.received_document = kwargs.get('received_document', None)
 
+    def __str__(self):
+        return (
+            f'<Puff send: serial={self.send_serial},'
+            f' length={len(self.send_chunk)},'
+            f' chunk={self.send_chunk};'
+            f' received: serial={self.received_serial},'
+            f' length={len(self.received_chunk)},'
+            f' chunk={self.received_chunk};'
+            f' hashed={self.hashed}>'
+        )
+
     def update(self, **kwargs):
         '''
         fill in values that weren't available on instantiation
@@ -181,6 +192,7 @@ def transceive():
                     logging.info('no more data')
                     puff.update(send_document=None, send_serial=0)
             elif seen and seen != lastseen:
+                logging.debug('showing qrcode for %s', puff)
                 qrshow(label, puff.pack())
                 lastseen = seen
     finally:
