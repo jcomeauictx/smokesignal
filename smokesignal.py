@@ -145,7 +145,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                 seen = qrdecode(Image.fromarray(captured[1]))
                 if seen and seen != lastseen:
                     received = Puff(data=seen)
-                    logging.debug('received: %r', received)
+                    logging.debug('seen: %r, received: %s', seen, received)
                     if received.hashed == sent.checkhash():
                         logging.debug('our last packet was received intact')
                         sent.bump_serial()
