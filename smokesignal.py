@@ -98,7 +98,7 @@ class Puff():
         '''
         return (self.serial.to_bytes(SERIAL_BYTES) +
             len(self.chunk).to_bytes(LENGTH_BYTES) +
-            self.chunk.rjust(CHUNKSIZE, b'\0') +
+            self.chunk.ljust(CHUNKSIZE, b'\0') +
             self.hashed)
 
     def bump_serial(self):
