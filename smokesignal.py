@@ -33,9 +33,9 @@ SERIAL_BYTES = SERIAL_BITS // 8
 LENGTH_BITS = 32
 LENGTH_BYTES = LENGTH_BITS // 8
 PACKET_LENGTH = (
-    SERIAL_BYTES * 2 +
-    LENGTH_BYTES * 2 +
-    CHUNKSIZE * 2 +
+    SERIAL_BYTES +
+    LENGTH_BYTES +
+    CHUNKSIZE +
     HASHLENGTH
 )
 SERIAL_MODULUS = 1 << SERIAL_BITS
@@ -49,36 +49,30 @@ logging.info('IPC pipe: %s, url: %s', PIPE, URL)
 
 class Puff():
     '''
-    data and metadata for a single transceive QR code
+    data for a single transceive QR code
 
     unlike transmit() and receive(), which use different sized QR codes,
     transceive sends and receives codes of the same length:
-    send_serial, SERIAL_BYTES bytes
-    send_length, LENGTH_BYTES bytes
-    send_chunk, CHUNKSIZE bytes
-    received_serial, SERIAL_BYTES bytes
-    received_length, LENGTH_BYTES bytes
-    received_chunk, CHUNKSIZE bytes
-    hashed, HASHLENGTH bytes  # hash of what peer saw
+    serial, SERIAL_BYTES bytes
+    length, LENGTH_BYTES bytes
+    chunk, CHUNKSIZE bytes
+    hashed, HASHLENGTH bytes  # hash of what we saw from peer
     '''
-    def __init__(self, **kwargs):
-        self.send_serial = kwargs.get('send_serial', 0)
-        self.send_chunk = kwargs.get('send_chunk', b'')
-        self.received_serial = kwargs.get('received_serial', 0)
-        self.received_chunk = kwargs.get('received_chunk', b'')
+    def __init__(self, data=b'', **kwargs):
+        if data:
+            offset = SERIAL_BYTES
+            self.serial = int.from_bytes(data[:offset])
+            length = int.from_bytes(data[offset:offset + LENGTH_BYTES])
+            offset += LENGTH_BYTES
+            self.chunk = data[offset:offset + length]
+        self.serial = kwargs.get('serial', 0)
+        self.chunk = kwargs.get('chunk', b'')
         self.hashed = kwargs.get('hashed', EMPTY_HASH)
-        # metadata, not part of QR code
-        self.send_document = kwargs.get('send_document', None)
-        self.received_document = kwargs.get('received_document', None)
 
     def __str__(self):
         return (
-            f'<Puff send: serial={self.send_serial},'
-            f' length={len(self.send_chunk)},'
-            f' chunk={self.send_chunk};'
-            f' received: serial={self.received_serial},'
-            f' length={len(self.received_chunk)},'
-            f' chunk={self.received_chunk};'
+            f'<Puff serial={self.serial},'
+            f' chunk={self.chunk};'
             f' hashed={self.hashed}>'
         )
 
@@ -89,20 +83,6 @@ class Puff():
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-            elif key == 'seen':
-                # update Puff with fields sent by peer
-                # update 'hashed' field with hash of what we saw
-                offset = SERIAL_BYTES + LENGTH_BYTES + CHUNKSIZE
-                self.received_serial = int.from_bytes(
-                    value[offset:offset + SERIAL_BYTES]
-                )
-                offset += SERIAL_BYTES
-                length = int.from_bytes(
-                    value[offset:offset + LENGTH_BYTES]
-                )
-                offset += LENGTH_BYTES
-                self.received_chunk = value[offset:offset + length]
-                self.hashed = self.received_hash()
             else:
                 logging.warning('not setting unknown attribute %s', key)
 
@@ -113,39 +93,25 @@ class Puff():
         >>> len(Puff().pack()) == PACKET_LENGTH
         True
         '''
-        return (self.send_serial.to_bytes(SERIAL_BYTES) +
-            len(self.send_chunk).to_bytes(LENGTH_BYTES) +
-            self.send_chunk.rjust(CHUNKSIZE, b'\0') +
-            self.received_serial.to_bytes(SERIAL_BYTES) +
-            len(self.received_chunk).to_bytes(LENGTH_BYTES) +
-            self.received_chunk.rjust(CHUNKSIZE, b'\0') +
+        return (self.serial.to_bytes(SERIAL_BYTES) +
+            len(self.chunk).to_bytes(LENGTH_BYTES) +
+            self.chunk.rjust(CHUNKSIZE, b'\0') +
             self.hashed)
 
     def bump_serial(self):
         '''
-        increment send_serial
+        increment serial number
         '''
-        self.send_serial = (self.send_serial + 1) % SERIAL_MODULUS
+        self.serial = (self.serial + 1) % SERIAL_MODULUS
 
-    def send_hash(self):
+    def checkhash(self):
         '''
         get hash digest with values of send_{serial,length,chunk}
         '''
         data = (
-            self.send_serial.to_bytes(SERIAL_BYTES) +
-            len(self.send_chunk).to_bytes(LENGTH_BYTES) +
-            self.send_chunk
-        )
-        return chunkhash(data)
-
-    def received_hash(self):
-        '''
-        get hash digest with values from received packet
-        '''
-        data = (
-            self.received_serial.to_bytes(SERIAL_BYTES) +
-            len(self.received_chunk).to_bytes(LENGTH_BYTES) +
-            self.received_chunk
+            self.serial.to_bytes(SERIAL_BYTES) +
+            len(self.chunk).to_bytes(LENGTH_BYTES) +
+            self.chunk
         )
         return chunkhash(data)
 
@@ -162,44 +128,47 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
     window.update()
     seen = lastseen = b''
     shown = None  # barcode being displayed
-    puff = Puff()
+    send_document = received_document = None
+    sent = Puff()
     try:
         context = zmq.Context()
         socket = context.socket(zmq.REP)
         socket.bind(URL)
         while capture.isOpened():
+            if cv2.waitKey(1) & 0xff == ord('q'):
+                break
             captured = capture.read()
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 1000, 0)
-                seen = qrdecode(Image.fromarray(captured[1]))
+                seen = Puff(data=qrdecode(Image.fromarray(captured[1])))
                 if seen and seen != lastseen:
                     logging.debug('seen: %r', seen)
-                    puff.update(seen=seen)
-                    if seen[-HASHLENGTH:] == puff.send_hash():
+                    if seen.hashed == sent.checkhash():
                         logging.debug('our last packet was received intact')
-                        puff.bump_serial()
-            if cv2.waitKey(1) & 0xff == ord('q'):
-                break
+                        sent.bump_serial()
+                    if seen.chunk:
+                        received_document = received_document or newpath()
+                        with open(received_document, 'rb') as savedata:
+                            savedata.seek(0, os.SEEK_END)
+                            savedata.write(seen.chunk)
+                    else:
+                        received_document = None
+                    lastseen = seen
             if socket.poll(1):
-                puff.update(send_document=socket.recv_string(), send_serial=0)
-                logging.info('requested to send document %s',
-                             puff.send_document)
-            if puff.send_document and shown != puff.pack():
-                with open(puff.send_document, 'rb') as senddata:
-                    senddata.seek(puff.send_serial * CHUNKSIZE)
-                    puff.update(send_chunk=senddata.read(CHUNKSIZE))
-                if puff.send_chunk:
-                    shown = True
+                send_document = socket.recv_string()
+                sent.update(serial=0)
+                logging.info('requested to send document %s', send_document)
+            if send_document and shown != sent.pack():
+                with open(send_document, 'rb') as senddata:
+                    senddata.seek(sent.serial * CHUNKSIZE)
+                    sent.update(chunk=senddata.read(CHUNKSIZE))
+                if sent.chunk:
+                    shown = qrshow(label, sent.pack())
                 else:
                     logging.info('no more data')
-                    puff.update(send_document=None, send_serial=0)
-            elif seen and seen != lastseen:
-                logging.debug('showing qrcode for %s', puff)
-                shown = True
-                lastseen = seen
-            if shown is True:
-                shown = qrshow(label, puff.pack())
+                    send_document = None
+                    sent.update(serial=0)
     finally:
         socket.close()
         context.term()
@@ -208,6 +177,12 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
         capture.release()
         cv2.destroyAllWindows()
         window.destroy()
+
+def newpath():
+    '''
+    return pathspec for a new document
+    '''
+    return os.path.join('received', datetime.now().isoformat())
 
 def sendfile(document):
     '''
