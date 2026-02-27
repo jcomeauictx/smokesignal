@@ -153,8 +153,8 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                         logging.debug('our last packet was received intact')
                         sent.bump_serial()
                     else:
-                        logging.warning('unexpected hash: %r != %r',
-                                        received.hashed, sent.checkhash())
+                        logging.warning('unexpected hash for %s: %r != %s',
+                                        sent, sent.checkhash(), received)
                     if received.chunk:
                         logging.debug('received %d byte chunk from peer',
                                       len(received.chunk))
@@ -180,7 +180,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                                   len(sent.chunk))
                     shown = qrshow(label, sent.pack())
                 else:
-                    logging.info('no more data')
+                    logging.info('no more data in %s', send_document)
                     send_document = None
                     sent.update(serial=0)
             elif received:
