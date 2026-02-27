@@ -159,6 +159,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                             savedata.write(received.chunk)
                     else:
                         received_document = None
+                        received = None
                     lastseen = seen
             if socket.poll(1):
                 send_document = socket.recv_string()
@@ -174,6 +175,9 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                     logging.info('no more data')
                     send_document = None
                     sent.update(serial=0)
+            elif received:
+                shown = qrshow(label, sent.pack())
+                received = None
     finally:
         socket.close()
         context.term()
