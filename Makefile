@@ -10,6 +10,8 @@ endif
 SCRIPTS := $(wildcard *.py)
 DOCTESTS := $(SCRIPTS:.py=.doctest)
 LINT := $(SCRIPTS:.py=.pylint)
+DRYRUN ?= --dry-run
+DELETE ?= --delete
 ifneq ($(SHOWENV),)
 export
 endif
@@ -26,6 +28,13 @@ requirements:
 %.doctest: %.py
 	python3 -m doctest $<
 check: $(LINT) $(DOCTESTS)
+syncpeer:
+	rsync -avcz $(DRYRUN) $(DELETE) \
+	 --exclude '.git' \
+	 --exclude 'sent' \
+	 --exclude 'received' \
+	 --exclude '__pycache__' \
+	 . peer:$(PWD)/
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@
