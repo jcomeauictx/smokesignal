@@ -152,12 +152,16 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                     if received.hashed == sent.checkhash():
                         logging.debug('our last packet was received intact')
                         sent.bump_serial()
+                    else:
+                        logging.warning('unexpected hash: %r != %r',
+                                        received.hashed, sent.checkhash())
                     if received.chunk:
                         received_document = received_document or newpath()
                         with open(received_document, 'ab') as savedata:
                             savedata.write(received.chunk)
                         sent.update(hashed=received.checkhash())
                     else:
+                        logging.info('no data from peer')
                         received_document = None
                         received = None
                     lastseen = seen
