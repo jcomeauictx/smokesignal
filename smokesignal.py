@@ -130,6 +130,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
     shown = None  # barcode being displayed
     send_document = received_document = None
     sent = Puff()
+    received = None
     try:
         context = zmq.Context()
         socket = context.socket(zmq.REP)
@@ -141,17 +142,18 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
             if captured[0]:
                 cv2.imshow('frame captured', captured[1])
                 cv2.moveWindow('frame captured', 1000, 0)
-                seen = Puff(data=qrdecode(Image.fromarray(captured[1])))
+                seen = qrdecode(Image.fromarray(captured[1]))
                 if seen and seen != lastseen:
-                    logging.debug('seen: %r', seen)
-                    if seen.hashed == sent.checkhash():
+                    received = Puff(data=seen)
+                    logging.debug('received: %r', received)
+                    if received.hashed == sent.checkhash():
                         logging.debug('our last packet was received intact')
                         sent.bump_serial()
-                    if seen.chunk:
+                    if received.chunk:
                         received_document = received_document or newpath()
                         with open(received_document, 'rb') as savedata:
                             savedata.seek(0, os.SEEK_END)
-                            savedata.write(seen.chunk)
+                            savedata.write(received.chunk)
                     else:
                         received_document = None
                     lastseen = seen
