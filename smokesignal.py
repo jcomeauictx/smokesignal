@@ -157,6 +157,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                         with open(received_document, 'wb') as savedata:
                             savedata.seek(0, os.SEEK_END)
                             savedata.write(received.chunk)
+                        sent.update(hashed=received.checkhash())
                     else:
                         received_document = None
                         received = None
