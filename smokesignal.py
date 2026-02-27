@@ -154,8 +154,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                         sent.bump_serial()
                     if received.chunk:
                         received_document = received_document or newpath()
-                        with open(received_document, 'wb') as savedata:
-                            savedata.seek(0, os.SEEK_END)
+                        with open(received_document, 'ab') as savedata:
                             savedata.write(received.chunk)
                         sent.update(hashed=received.checkhash())
                     else:
