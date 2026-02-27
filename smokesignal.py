@@ -183,6 +183,9 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                     logging.info('no more data in %s', send_document)
                     send_document = None
                     sent.update(serial=0)
+                    label.configure(text='Transceiving...', image=None)
+                    label.image = None
+                    label.update()
             elif received:
                 shown = qrshow(label, sent.pack())
                 received = None
@@ -311,7 +314,7 @@ def qrshow(label, data):
             raise
         logging.debug('image type: %s', type(image))
         photo = Photo(image)
-        label.configure(image=photo, data=None)
+        label.configure(image=photo, text=None)
         label.image = photo  # claude: necessary to thwart garbage collection
         label.update()
         logging.debug('image: %s', image)
