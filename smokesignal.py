@@ -65,9 +65,12 @@ class Puff():
             length = int.from_bytes(data[offset:offset + LENGTH_BYTES])
             offset += LENGTH_BYTES
             self.chunk = data[offset:offset + length]
-        self.serial = kwargs.get('serial', 0)
-        self.chunk = kwargs.get('chunk', b'')
-        self.hashed = kwargs.get('hashed', EMPTY_HASH)
+            offset += CHUNKSIZE
+            self.hashed = data[offset:]
+        else:
+            self.serial = kwargs.get('serial', 0)
+            self.chunk = kwargs.get('chunk', b'')
+            self.hashed = kwargs.get('hashed', EMPTY_HASH)
 
     def __str__(self):
         return (
@@ -151,7 +154,7 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                         sent.bump_serial()
                     if received.chunk:
                         received_document = received_document or newpath()
-                        with open(received_document, 'rb') as savedata:
+                        with open(received_document, 'wb') as savedata:
                             savedata.seek(0, os.SEEK_END)
                             savedata.write(received.chunk)
                     else:
