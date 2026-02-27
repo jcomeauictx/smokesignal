@@ -156,6 +156,8 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                         logging.warning('unexpected hash: %r != %r',
                                         received.hashed, sent.checkhash())
                     if received.chunk:
+                        logging.debug('received %d byte chunk from peer',
+                                      len(received.chunk))
                         received_document = received_document or newpath()
                         with open(received_document, 'ab') as savedata:
                             savedata.write(received.chunk)
