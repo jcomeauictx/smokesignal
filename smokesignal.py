@@ -170,6 +170,8 @@ def transceive():  # pylint: disable=too-many-branches, too-many-statements
                     senddata.seek(sent.serial * CHUNKSIZE)
                     sent.update(chunk=senddata.read(CHUNKSIZE))
                 if sent.chunk:
+                    logging.debug('showing QR code for %d bytes of data',
+                                  len(sent.chunk))
                     shown = qrshow(label, sent.pack())
                 else:
                     logging.info('no more data')
