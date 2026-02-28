@@ -35,6 +35,8 @@ syncpeer:
 	 --exclude 'received' \
 	 --exclude '__pycache__' \
 	 . peer:$(PWD)/
+wsgi: wsgi.py
+	python3 $<
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@

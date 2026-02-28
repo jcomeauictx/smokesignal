@@ -326,5 +326,5 @@ def not_found(start_response):
 
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
-    print('serving on http://0.0.0.0:8080')
-    make_server('0.0.0.0', 8080, application).serve_forever()
+    print('serving on http://127.0.0.1:8080')
+    make_server('127.0.0.1', 8080, application).serve_forever()
