@@ -10,19 +10,13 @@
 <script src="smokesignal.js"></script>
 </head>
 <body>
-<h3>Smokesignal</h3>
+<div class="container">
+<div id="qrcode"></div>
+<div id="scan-results">(Scan results will appear here)</div>
 <div id="status">Status: idle</div>
-
-<h4>Send File</h4>
 <input type="file" id="file-input">
 <button onclick="uploadFile()">Send</button>
-
-<h4>QR Display (to peer)</h4>
-<div id="qrcode"></div>
-
-<h4>Scanner (from peer)</h4>
 <div id="qr-reader"></div>
-<div id="scan-results">(Scan results will appear here)</div>
-
+</div>
 </body>
 </html>
