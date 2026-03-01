@@ -1,8 +1,8 @@
 window.addEventListener("load", function() {
     var qrcodeElement = document.getElementById("qrcode");
     var qrcode = new QRCode(qrcodeElement, {
-        width: qrcodeElement.width,
-        height: qrcodeElement.height,
+        width: qrcodeElement.offsetWidth,
+        height: qrcodeElement.offsetHeight,
         correctLevel: QRCode.CorrectLevel.L
     });
     var lastQrData = null;
