@@ -1,21 +1,20 @@
 <style>
-    * { all: initial !important; }
-    html, body {
-        box-sizing: border-box;
-	margin: 0;
-	padding: 0;
-	height: 100%;
-    }
     body {
         font-family: sans-serif;
+    }
+    html, body {
+        box-sizing: border-box;
+	margin: .5vmin;
+	padding: 0;
+	height: 100%;
     }
     #qr-reader {
         width: 100%;
         max-width: 500px;
     }
     #qrcode {
-        width: 100vmin;
-        height: 100vmin;
+        width: 98vmin;
+        height: 98vmin;
     }
     #scan-results {
         margin: 10px 0;
@@ -38,3 +37,5 @@
         margin: 10px 0;
     }
 </style>
+/* vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
+ */
