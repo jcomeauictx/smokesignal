@@ -241,7 +241,8 @@ def serve_file(filename, start_response):
     '''
     # remove leading /, then prepend wsgi.py directory
     filepath = os.path.join(STATIC_DIR, wwwpath.basename(filename))
-    if not os.path.isfile(filepath):
+    if not os.path.exists(filepath):
+        logging.error('%r not found', filepath)
         return not_found(start_response)
     content_types = {
         '.html': 'text/html', '.js': 'application/javascript',
