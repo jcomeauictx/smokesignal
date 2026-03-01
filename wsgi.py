@@ -20,6 +20,7 @@ or for testing:
     python3 wsgi.py
 '''
 import os, json, logging, base64, threading  # pylint: disable=multiple-imports
+import posixpath as wwwpath
 from datetime import datetime
 from hashlib import sha256
 
@@ -238,7 +239,8 @@ def serve_file(filename, start_response):
     '''
     serve static file
     '''
-    filepath = os.path.join(STATIC_DIR, filename)
+    # remove leading /, then prepend wsgi.py directory
+    filepath = os.path.join(STATIC_DIR, wwwpath.basename(filename))
     if not os.path.isfile(filepath):
         return not_found(start_response)
     content_types = {
