@@ -8,6 +8,14 @@
 	padding: 0;
 	height: 100%;
     }
+    .qr-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    .qr-left, .qr-right {
+        flex-grow: 1;
+    }
     #qr-reader {
         width: 100%;
         max-width: 500px;
