@@ -217,21 +217,21 @@ STATE = TransceiverState()
 def application(environ, start_response):
     '''WSGI entry point'''
     method = environ.get('REQUEST_METHOD', 'GET')
-    path = environ.get('PATH_INFO', '/')
+    path = wwwpath.basename(environ.get('PATH_INFO', '/'))
 
-    if path == '/' and method == 'GET':
+    if path == '' and method == 'GET':
         return serve_file('index.html', start_response)
     elif os.path.exists(path) and method == 'GET':
         return serve_file(path, start_response)
-    elif path == '/scan' and method == 'POST':
+    elif path == 'scan' and method == 'POST':
         return api_scan(environ, start_response)
-    elif path == '/qrdata' and method == 'GET':
+    elif path == 'qrdata' and method == 'GET':
         return api_qrdata(start_response)
-    elif path == '/status' and method == 'GET':
+    elif path == 'status' and method == 'GET':
         return api_status(start_response)
-    elif path == '/send' and method == 'POST':
+    elif path == 'send' and method == 'POST':
         return api_send(environ, start_response)
-    elif path == '/upload' and method == 'POST':
+    elif path == 'upload' and method == 'POST':
         return api_upload(environ, start_response)
     else:
         return not_found(start_response)
@@ -240,8 +240,7 @@ def serve_file(filename, start_response):
     '''
     serve static file
     '''
-    # remove leading /, then prepend wsgi.py directory
-    filepath = os.path.join(STATIC_DIR, wwwpath.basename(filename))
+    filepath = os.path.join(STATIC_DIR, filename)
     if not os.path.exists(filepath):
         logging.error('%r not found', filepath)
         return not_found(start_response)
