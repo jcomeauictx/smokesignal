@@ -1,4 +1,3 @@
-<script>
 var qrcode = new QRCode(document.getElementById("qrcode"), {
     width: 200,
     height: 200,
@@ -113,5 +112,3 @@ function uploadFile() {
     };
     reader.readAsArrayBuffer(file);
 }
-</script>
-
