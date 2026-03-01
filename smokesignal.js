@@ -1,7 +1,8 @@
 window.addEventListener("load", function() {
-    var qrcode = new QRCode(document.getElementById("qrcode"), {
-        width: 200,
-        height: 200,
+    var qrcodeElement = document.getElementById("qrcode");
+    var qrcode = new QRCode(qrcodeElement, {
+        width: qrcodeElement.width,
+        height: qrcodeElement.height,
         correctLevel: QRCode.CorrectLevel.L
     });
     var lastQrData = null;
@@ -102,5 +103,6 @@ window.addEventListener("load", function() {
         };
         reader.readAsArrayBuffer(file);
     }
+    qrcode.makeCode("Smokesignal transceiving...");
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4

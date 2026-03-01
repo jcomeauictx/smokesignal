@@ -1,7 +1,7 @@
 <style>
     body { font-family: sans-serif; margin: 10px; }
     #qr-reader { width: 100%; max-width: 500px; }
-    #qrcode { margin-top: 15px; }
+    #qrcode { margin-top: 15px; width: 100vmin; height: 100vmin; }
     #scan-results { margin: 10px 0; padding: 5px; background: #eee;
                     word-break: break-all; font-family: monospace;
                     font-size: 0.8em; }
