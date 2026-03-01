@@ -37,6 +37,8 @@ syncpeer:
 	 . peer:$(PWD)/
 wsgi: wsgi.py
 	python3 $<
+uwsgi: wsgi.py
+	$@ --http :8080 --wsgi-file $< --callable application
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@

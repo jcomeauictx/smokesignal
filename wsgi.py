@@ -25,6 +25,7 @@ from datetime import datetime
 from hashlib import sha256
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
+logging.warning('wsgi script starting')
 
 STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 RECEIVED_DIR = os.path.join(STATIC_DIR, 'received')
