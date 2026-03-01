@@ -1,0 +1,11 @@
+<style>
+    body { font-family: sans-serif; margin: 10px; }
+    #qr-reader { width: 100%; max-width: 500px; }
+    #qrcode { margin-top: 15px; }
+    #scan-results { margin: 10px 0; padding: 5px; background: #eee;
+                    word-break: break-all; font-family: monospace;
+                    font-size: 0.8em; }
+    #status { margin: 10px 0; padding: 5px; background: #dfd; }
+    button { margin: 5px; padding: 8px 16px; }
+    #file-input { margin: 10px 0; }
+</style>
