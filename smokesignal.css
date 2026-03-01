@@ -14,11 +14,11 @@
         width: 100%;
     }
     .qr-left, .qr-right {
-        flex-grow: 1;
+        flex-grow: 1;  /* any positive number here will work */
     }
     #qr-reader {
         width: 100%;
-        max-width: 500px;
+        max-width: 100%;
     }
     #qrcode {
         width: 98vmin;
