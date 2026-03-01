@@ -7,12 +7,12 @@ This backend manages the protocol state and file I/O.
 
 endpoints:
     GET  /              - serve index.html
-    GET  /static/<file> - serve JS/CSS files
     POST /scan          - browser sends decoded QR data to backend
     GET  /qrdata        - backend sends next QR code data to browser
     GET  /status        - current transceiver status
     POST /send          - initiate sending a file
     POST /upload        - upload a file to send
+    GET  <file>         - serve JS/CSS files
 
 for iSH/iPhone: run with
     uwsgi --http :8080 --wsgi-file wsgi.py --callable application
@@ -219,8 +219,8 @@ def application(environ, start_response):
 
     if path == '/' and method == 'GET':
         return serve_file('index.html', start_response)
-    elif path.startswith('/static/') and method == 'GET':
-        return serve_file(path[len('/static/'):], start_response)
+    elif os.path.exists(path) and method == 'GET':
+        return serve_file(path, start_response)
     elif path == '/scan' and method == 'POST':
         return api_scan(environ, start_response)
     elif path == '/qrdata' and method == 'GET':
@@ -235,8 +235,9 @@ def application(environ, start_response):
         return not_found(start_response)
 
 def serve_file(filename, start_response):
-    '''serve static file'''
-    filename = os.path.basename(filename)
+    '''
+    serve static file
+    '''
     filepath = os.path.join(STATIC_DIR, filename)
     if not os.path.isfile(filepath):
         return not_found(start_response)
