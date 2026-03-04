@@ -189,7 +189,9 @@ class TransceiverState():
                         self.recv_file = None
 
     def get_qrdata(self):
-        '''return current QR data as base64, or None'''
+        '''
+	return current QR data as base64, or None
+	'''
         with self.lock:
             if self.qr_out:
                 return base64.b64encode(self.qr_out).decode('ascii')
