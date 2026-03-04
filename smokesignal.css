@@ -8,6 +8,20 @@
 	padding: 0;
 	height: 100%;
     }
+    .hide-on-mobile {
+        display: block;
+    }
+    .show-on-mobile {
+        display: none;
+    }
+    @media screen and (max-width: 600px) {
+        .hide-on-mobile {
+            display: none !important;
+        }
+        .show-on-mobile {
+            display: block;
+        }
+    }
     .qr-container {
         display: flex;
         justify-content: center;
