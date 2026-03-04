@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Smokesignal</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="smokesignal.css">
+<script src="html5-qrcode.min.js"></script>
+<script src="qrcode.js"></script>
+<script src="smokesignal.js"></script>
+</head>
+<body>
+<div class="qr-container">
+  <div class="qr-left hide-on-mobile">
+    <input type="file" id="file-input">
+    <button id="file-upload" onclick="uploadFile()">Send</button>
+    <div id="status">Status: idle</div>
+  </div>
+  <div id="qrcode"></div>
+  <div class="qr-right hide-on-mobile">
+    <div id="scan-results">(Scan results will appear here)</div>
+    <div id="qr-reader"></div>
+  </div>
+</div>
+<div class="vertical-layout show-on-mobile">
+  <div class="panel">
+  <div class="panel">
+  <div class="panel">
+</div>
+</body>
+</html>
+<!-- vim: tabstop=8 shiftwidth=2 expandtab softtabstop=2
+--> 
