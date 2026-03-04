@@ -12,29 +12,31 @@ window.addEventListener("load", function() {
     var lastResult = null;
 
     function onScanSuccess(decodedText, decodedResult) {
+        console.debug("onScanSuccess() called");
         if (decodedText !== lastResult) {
             lastResult = decodedText;
             /* decodedText may be text; for binary protocol we need
                to base64-encode it for transport to the backend.
                html5-qrcode gives us text, so we encode to base64. */
-            var b64;
-            try {
-                b64 = btoa(decodedText);
-            } catch(e) {
-                /* if it contains chars > 255, encode via TextEncoder */
-                var bytes = new TextEncoder().encode(decodedText);
-                b64 = btoa(String.fromCharCode.apply(null, bytes));
-            }
-            resultContainer.textContent = "Scanned " +
-                decodedText.length + " bytes, serial=" +
-                decodedText.charCodeAt(3);
-            fetch("/scan", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({data: b64})
-            }).catch(function(err) {
-                console.error("scan post failed:", err);
-            });
+            let b64;
+            b64 = btoa(decodedText);
+            /* it may contain chars > 255, so encode via TextEncoder */
+            const bytes = new TextEncoder().encode(decodedText);
+            b64 = btoa(String.fromCharCode.apply(null, bytes));
+            resultContainer.textContent = decodedText;
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/scan", true);
+            xhr.onload = function() {
+                if (xhr.status == 200) {
+                    console.log("/scan post successful");
+                } else {
+                    console.error("/scan post status: " + xhr.status);
+                }
+            };
+            xhr.onerror = function() {
+                console.error("/scan post failed");
+            };
+            xhr.send(JSON.stringify({data: b64}));
         }
     }
 
