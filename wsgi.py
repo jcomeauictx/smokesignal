@@ -187,7 +187,6 @@ class TransceiverState():
                         self.recv_fh = None
                         logging.info('finished receiving %s', self.recv_file)
                         self.recv_file = None
-                        if not self.send_file:
 
     def get_qrdata(self):
         '''return current QR data as base64, or None'''
