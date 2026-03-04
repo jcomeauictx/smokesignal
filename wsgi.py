@@ -9,7 +9,6 @@ endpoints:
     GET  /              - serve index.html
     POST /scan          - browser sends decoded QR data to backend
     GET  /qrdata        - backend sends next QR code data to browser
-    GET  /status        - current transceiver status
     POST /send          - initiate sending a file
     POST /upload        - upload a file to send
     GET  <file>         - serve JS/CSS files
@@ -102,7 +101,6 @@ class TransceiverState():
         self.recv_fh = None
         self.last_seen = b''
         self.qr_out = None  # bytes to display as QR
-        self.status = 'idle'
 
     def start_send(self, filepath):
         '''begin sending a file'''
@@ -113,7 +111,6 @@ class TransceiverState():
             self.send_fh = open(filepath, 'rb')
             self.sent = Puff()
             self._load_next_chunk()
-            self.status = 'sending'
             logging.info('started sending %s', filepath)
 
     def start_send_data(self, data, filename=None):
@@ -142,7 +139,6 @@ class TransceiverState():
                 self.send_file = None
                 self.sent = Puff()
                 self.qr_out = None
-                self.status = 'idle'
 
     def handle_scan(self, data):
         '''
@@ -177,7 +173,6 @@ class TransceiverState():
                             datetime.now().isoformat()
                         )
                         self.recv_fh = open(self.recv_file, 'wb')
-                        self.status = 'receiving'
                     self.recv_fh.write(received.chunk)
                     self.recv_fh.flush()
                     logging.debug('saved %d bytes to %s',
@@ -193,7 +188,6 @@ class TransceiverState():
                         logging.info('finished receiving %s', self.recv_file)
                         self.recv_file = None
                         if not self.send_file:
-                            self.status = 'idle'
 
     def get_qrdata(self):
         '''return current QR data as base64, or None'''
@@ -201,16 +195,6 @@ class TransceiverState():
             if self.qr_out:
                 return base64.b64encode(self.qr_out).decode('ascii')
             return None
-
-    def get_status(self):
-        '''return status dict'''
-        with self.lock:
-            return {
-                'status': self.status,
-                'sending': self.send_file,
-                'receiving': self.recv_file,
-                'serial': self.sent.serial,
-            }
 
 STATE = TransceiverState()
 
@@ -227,8 +211,6 @@ def application(environ, start_response):
         return api_scan(environ, start_response)
     elif path == 'qrdata' and method == 'GET':
         return api_qrdata(start_response)
-    elif path == 'status' and method == 'GET':
-        return api_status(start_response)
     elif path == 'send' and method == 'POST':
         return api_send(environ, start_response)
     elif path == 'upload' and method == 'POST':
@@ -288,10 +270,6 @@ def api_qrdata(start_response):
     '''return next QR data for browser to display'''
     data = STATE.get_qrdata()
     return json_response({'data': data}, start_response)
-
-def api_status(start_response):
-    '''return transceiver status'''
-    return json_response(STATE.get_status(), start_response)
 
 def api_send(environ, start_response):
     '''initiate sending a local file'''

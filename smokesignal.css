@@ -46,11 +46,6 @@
         font-family: monospace;
         font-size: 0.8em;
     }
-    #status {
-        margin: 10px 0;
-        padding: 5px;
-        background: #dfd;
-    }
     button {
         margin: 5px;
         padding: 8px 16px;

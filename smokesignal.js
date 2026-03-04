@@ -64,22 +64,6 @@ window.addEventListener("load", function() {
     }
     setInterval(pollQrData, 500);
 
-    /* Poll status */
-    function pollStatus() {
-        fetch("/status")
-            .then(function(r) { return r.json(); })
-            .then(function(j) {
-                var el = document.getElementById("status");
-                var text = "Status: " + j.status;
-                if (j.sending) text += " | Sending: " + j.sending;
-                if (j.receiving) text += " | Receiving: " + j.receiving;
-                text += " | Packet #" + j.serial;
-                el.textContent = text;
-            })
-            .catch(function(err) { console.error("status failed:", err); });
-    }
-    setInterval(pollStatus, 1000);
-
     /* Upload file to send */
     function uploadFile() {
         var input = document.getElementById("file-input");
