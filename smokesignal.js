@@ -72,8 +72,14 @@ window.addEventListener("load", function() {
             return;
         }
         const file = input.files[0];
+        alert("about to send file " + file);
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function(event) {
+            console.debug("file " + file + " has been read");
+            const data = reader.readAsBinaryString();
+            for (let i=0; i < data.length; i+=256) {
+                qrcode.makeCode(data.substring(i, 256));
+            }
             const b64 = btoa(String.fromCharCode.apply(null,
                 new Uint8Array(e.target.result)));
             fetch("/upload", {
