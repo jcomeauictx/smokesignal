@@ -19,7 +19,7 @@ or for testing:
     python3 wsgi.py
 '''
 import os, json, logging, base64, threading  # pylint: disable=multiple-imports
-import time, posixpath as wwwpath  # pylint: disable=multiple-imports
+import posixpath as wwwpath  # pylint: disable=multiple-imports
 from datetime import datetime
 from hashlib import sha256
 
@@ -42,7 +42,9 @@ PACKET_LENGTH = SERIAL_BYTES + LENGTH_BYTES + CHUNKSIZE + HASHLENGTH
 SERIAL_MODULUS = 1 << SERIAL_BITS
 
 def chunkhash(data):
-    '''return binary hash of data'''
+    '''
+    return binary hash of data
+    '''
     return HASH(data).digest()
 
 class Puff():
@@ -69,14 +71,18 @@ class Puff():
             self.hashed = kwargs.get('hashed', EMPTY_HASH)
 
     def pack(self):
-        '''pack into bytes for QR code'''
+        '''
+        pack into bytes for QR code
+        '''
         return (self.serial.to_bytes(SERIAL_BYTES, 'big') +
                 len(self.chunk).to_bytes(LENGTH_BYTES, 'big') +
                 self.chunk.ljust(CHUNKSIZE, b'\0') +
                 self.hashed)
 
     def checkhash(self):
-        '''hash of serial + length + chunk'''
+        '''
+        hash of serial + length + chunk
+        '''
         data = (
             self.serial.to_bytes(SERIAL_BYTES, 'big') +
             len(self.chunk).to_bytes(LENGTH_BYTES, 'big') +
@@ -103,7 +109,9 @@ class TransceiverState():  # pylint: disable=too-many-instance-attributes
         self.qr_out = None  # bytes to display as QR
 
     def start_send(self, filepath):
-        '''begin sending a file'''
+        '''
+        begin sending a file
+        '''
         with self.lock:
             if self.send_fh:
                 self.send_fh.close()
@@ -115,7 +123,9 @@ class TransceiverState():  # pylint: disable=too-many-instance-attributes
             logging.info('started sending %s', filepath)
 
     def start_send_data(self, data, filename=None):
-        '''begin sending raw data (from upload)'''
+        '''
+        begin sending raw data (from upload)
+        '''
         filepath = os.path.join(STATIC_DIR, 'uploads',
                                 filename or 'upload-' +
                                 datetime.now().isoformat())
@@ -125,7 +135,9 @@ class TransceiverState():  # pylint: disable=too-many-instance-attributes
         self.start_send(filepath)
 
     def _load_next_chunk(self):
-        '''read next chunk and prepare QR data'''
+        '''
+        read next chunk and prepare QR data
+        '''
         if self.send_fh:
             chunk = self.send_fh.read(CHUNKSIZE)
             if chunk:
@@ -192,8 +204,8 @@ class TransceiverState():  # pylint: disable=too-many-instance-attributes
 
     def get_qrdata(self):
         '''
-	return current QR data as base64, or None
-	'''
+	    return current QR data as base64, or None
+	    '''
         with self.lock:
             if self.qr_out:
                 return base64.b64encode(self.qr_out).decode('ascii')
@@ -202,7 +214,9 @@ class TransceiverState():  # pylint: disable=too-many-instance-attributes
 STATE = TransceiverState()
 
 def application(environ, start_response):
-    '''WSGI entry point'''
+    '''
+    WSGI entry point
+    '''
     method = environ.get('REQUEST_METHOD', 'GET')
     path = wwwpath.basename(environ.get('PATH_INFO', '/'))
     result = not_found
@@ -246,7 +260,9 @@ def serve_file(environ, start_response):
     return [body]
 
 def json_response(data, start_response, status='200 OK'):
-    '''helper for JSON responses'''
+    '''
+    helper for JSON responses
+    '''
     body = json.dumps(data).encode()
     start_response(status, [
         ('Content-Type', 'application/json'),
@@ -255,12 +271,16 @@ def json_response(data, start_response, status='200 OK'):
     return [body]
 
 def read_body(environ):
-    '''read request body'''
+    '''
+    read request body
+    '''
     length = int(environ.get('CONTENT_LENGTH', 0))
     return environ['wsgi.input'].read(length)
 
 def api_scan(environ, start_response):
-    '''browser sends decoded QR data'''
+    '''
+    browser sends decoded QR data
+    '''
     try:
         payload = json.loads(read_body(environ))
         raw = base64.b64decode(payload['data'])
@@ -272,12 +292,16 @@ def api_scan(environ, start_response):
                              start_response, '400 Bad Request')
 
 def api_qrdata(environ, start_response):  # pylint: disable=unused-argument
-    '''return next QR data for browser to display'''
+    '''
+    return next QR data for browser to display
+    '''
     data = STATE.get_qrdata()
     return json_response({'data': data}, start_response)
 
 def api_send(environ, start_response):
-    '''initiate sending a local file'''
+    '''
+    initiate sending a local file
+    '''
     try:
         payload = json.loads(read_body(environ))
         filepath = payload['path']
@@ -291,7 +315,9 @@ def api_send(environ, start_response):
                              start_response, '400 Bad Request')
 
 def api_upload(environ, start_response):
-    '''upload a file to send to peer'''
+    '''
+    upload a file to send to peer
+    '''
     try:
         payload = json.loads(read_body(environ))
         data = base64.b64decode(payload['data'])
@@ -303,7 +329,9 @@ def api_upload(environ, start_response):
                              start_response, '400 Bad Request')
 
 def not_found(start_response):
-    '''404'''
+    '''
+    404 Not Found
+    '''
     body = b'404 Not Found'
     start_response('404 Not Found', [
         ('Content-Type', 'text/plain'),
