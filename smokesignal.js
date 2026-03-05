@@ -79,7 +79,27 @@ window.addEventListener("load", function() {
         }, "");
     }
 
-    /* Upload file to send */
+    /* Binary string (big-endian) to integer */
+
+    function binaryStringToInteger(string) {
+        let result = 0;
+        for (let i = 0; i < string.length; i++) {
+            result = (result << 8) + string.charCodeAt(i);
+        }
+        return result;
+    }
+
+    /* Integer to big-endian binary string */
+    function integerToBinaryString(integer, length=4) {
+        let result = "";
+        for (let i = 0; i < length; i++) {
+            result = String.fromCharCode(integer % 256) + result;
+            integer >>= 8;
+        }
+        return result;
+    }
+
+    /* Send file to peer */
     function uploadFile() {
         const input = document.getElementById("file-input");
         if (!input.files.length) {
