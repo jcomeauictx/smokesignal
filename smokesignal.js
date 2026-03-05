@@ -1,4 +1,5 @@
 window.addEventListener("load", function() {
+    const fileUpload = document.getElementById("file-upload");
     const qrcodeElement = document.getElementById("qrcode");
     const qrcode = new QRCode(qrcodeElement, {
         width: qrcodeElement.offsetWidth,
@@ -118,6 +119,7 @@ window.addEventListener("load", function() {
             console.debug("doesn't appear to be a phone, left DOM as is");
         }
     }
+    fileUpload.addEventListener("click", uploadFile);
     setupPhone();
     qrcode.makeCode("Smokesignal transceiving...");
 });
