@@ -273,12 +273,7 @@ def api_scan(environ, start_response):
 
 def api_qrdata(environ, start_response):  # pylint: disable=unused-argument
     '''return next QR data for browser to display'''
-    data = None
-    while not data:
-        data = STATE.get_qrdata()
-        if not data:
-            logging.debug('awaiting qrdata...')
-            time.sleep(1)
+    data = STATE.get_qrdata()
     return json_response({'data': data}, start_response)
 
 def api_send(environ, start_response):
