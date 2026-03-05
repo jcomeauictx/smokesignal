@@ -1,15 +1,15 @@
 window.addEventListener("load", function() {
-    var qrcodeElement = document.getElementById("qrcode");
-    var qrcode = new QRCode(qrcodeElement, {
+    const qrcodeElement = document.getElementById("qrcode");
+    const qrcode = new QRCode(qrcodeElement, {
         width: qrcodeElement.offsetWidth,
         height: qrcodeElement.offsetHeight,
         correctLevel: QRCode.CorrectLevel.L
     });
-    var lastQrData = null;
+    let lastQrData = null;
 
     /* Scanner setup */
-    var resultContainer = document.getElementById("scan-results");
-    var lastResult = null;
+    const resultContainer = document.getElementById("scan-results");
+    let lastResult = null;
 
     function onScanSuccess(decodedText, decodedResult) {
         console.debug("onScanSuccess() called");
@@ -40,7 +40,7 @@ window.addEventListener("load", function() {
         }
     }
 
-    var html5QrcodeScanner = new Html5QrcodeScanner(
+    const html5QrcodeScanner = new Html5QrcodeScanner(
         "qr-reader", {fps: 10, qrbox: 250});
     html5QrcodeScanner.render(onScanSuccess);
 
@@ -53,7 +53,7 @@ window.addEventListener("load", function() {
                     lastQrData = j.data;
                     /* data is base64-encoded binary; QRCode.js can
                        handle raw strings, decode b64 to binary string */
-                    var raw = atob(j.data);
+                    let raw = atob(j.data);
                     qrcode.makeCode(raw);
                 } else if (!j.data && lastQrData) {
                     lastQrData = null;
@@ -66,15 +66,15 @@ window.addEventListener("load", function() {
 
     /* Upload file to send */
     function uploadFile() {
-        var input = document.getElementById("file-input");
+        const input = document.getElementById("file-input");
         if (!input.files.length) {
             alert("Select a file first");
             return;
         }
-        var file = input.files[0];
-        var reader = new FileReader();
+        const file = input.files[0];
+        const reader = new FileReader();
         reader.onload = function(e) {
-            var b64 = btoa(String.fromCharCode.apply(null,
+            const b64 = btoa(String.fromCharCode.apply(null,
                 new Uint8Array(e.target.result)));
             fetch("/upload", {
                 method: "POST",
@@ -89,7 +89,21 @@ window.addEventListener("load", function() {
         };
         reader.readAsArrayBuffer(file);
     }
+
+    /* check if phone, and if so, make hidden elements visible */
+    function setupPhone() {
+        const upper = document.getElementById("phone-upper");
+        const lower = document.getElementById("phone-lower");
+        if (upper.firstChild.offsetWidth == 0) {
+            console.debug("looks like a phone");
+            lower.appendChild(...upper.firstChild.children);
+            lower.appendChild(...upper.lastChild.children);
+            console.debug("moved children of left and right panels lower");
+        } else {
+            console.debug("doesn't appear to be a phone, left DOM as is");
+        }
+    }
+    setupPhone();
     qrcode.makeCode("Smokesignal transceiving...");
-    document.getElementById("phone-lower").appendChild(document.getElementById("phone-upper").firstChild);
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
