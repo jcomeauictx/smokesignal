@@ -77,10 +77,13 @@ window.addEventListener("load", function() {
         const reader = new FileReader();
         reader.onload = function(event) {
             console.debug("file " + file + " has been read");
-            const data = reader.readAsBinaryString(file);
+            const data = reader.result;
             for (let i=0; i < data.length; i+=256) {
                 qrcode.makeCode(data.substring(i, 256));
             }
+        };
+        reader.readAsBinaryString(file);
+        if (false) {
             const b64 = btoa(String.fromCharCode.apply(null,
                 new Uint8Array(e.target.result)));
             fetch("/upload", {
@@ -94,7 +97,7 @@ window.addEventListener("load", function() {
               })
               .catch(function(err) { alert("Upload failed: " + err); });
         };
-        reader.readAsArrayBuffer(file);
+        if (false) reader.readAsArrayBuffer(file);
     }
 
     /* check if phone, and if so, make hidden elements visible */
