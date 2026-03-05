@@ -95,12 +95,18 @@ window.addEventListener("load", function() {
         const upper = document.getElementById("phone-upper");
         const lower = document.getElementById("phone-lower");
         const leftPanel = upper.firstElementChild;
+        const rightPanel = upper.lastElementChild;
         const width = leftPanel.offsetWidth;
+        /* width should be 0 on phone because that div is set display:none */
         console.debug("left panel: " + leftPanel + ", width: " + width);
         if (width == 0) {
             console.debug("looks like a phone");
-            lower.appendChild(...upper.firstElementChild.children);
-            lower.appendChild(...upper.lastElementChild.children);
+            while (leftPanel.firstElementChild) {
+                lower.appendChild(leftPanel.firstElementChild)
+            }
+            while (rightPanel.firstElementChild) {
+                lower.appendChild(rightPanel.firstElementChild)
+            }
             console.debug("moved children of left and right panels lower");
         } else {
             console.debug("doesn't appear to be a phone, left DOM as is");
