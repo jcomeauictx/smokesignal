@@ -29,6 +29,7 @@
     }
     .qr-left, .qr-right {
         flex-grow: 1;  /* any positive number here will work */
+        margin: 0 10px;  /* left and right margins only */
     }
     #qr-reader {
         width: 100%;
