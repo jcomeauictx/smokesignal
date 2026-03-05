@@ -19,7 +19,7 @@ or for testing:
     python3 wsgi.py
 '''
 import os, json, logging, base64, threading  # pylint: disable=multiple-imports
-import posixpath as wwwpath
+import time, posixpath as wwwpath  # pylint: disable=multiple-imports
 from datetime import datetime
 from hashlib import sha256
 
@@ -84,7 +84,7 @@ class Puff():
         )
         return chunkhash(data)
 
-class TransceiverState():
+class TransceiverState():  # pylint: disable=too-many-instance-attributes
     '''
     manages the send/receive protocol state
 
@@ -108,6 +108,7 @@ class TransceiverState():
             if self.send_fh:
                 self.send_fh.close()
             self.send_file = filepath
+            # pylint: disable=consider-using-with
             self.send_fh = open(filepath, 'rb')
             self.sent = Puff()
             self._load_next_chunk()
@@ -172,6 +173,7 @@ class TransceiverState():
                             RECEIVED_DIR,
                             datetime.now().isoformat()
                         )
+                        # pylint: disable=consider-using-with
                         self.recv_fh = open(self.recv_file, 'wb')
                     self.recv_fh.write(received.chunk)
                     self.recv_fh.flush()
@@ -203,26 +205,28 @@ def application(environ, start_response):
     '''WSGI entry point'''
     method = environ.get('REQUEST_METHOD', 'GET')
     path = wwwpath.basename(environ.get('PATH_INFO', '/'))
-
+    result = not_found
     if path == '' and method == 'GET':
-        return serve_file('index.html', start_response)
+        environ['PATH_INFO'] = 'index.html'
+        result = serve_file
     elif os.path.exists(path) and method == 'GET':
-        return serve_file(path, start_response)
+        environ['PATH_INFO'] = path
+        result = serve_file
     elif path == 'scan' and method == 'POST':
-        return api_scan(environ, start_response)
+        result = api_scan
     elif path == 'qrdata' and method == 'GET':
-        return api_qrdata(start_response)
+        result = api_qrdata
     elif path == 'send' and method == 'POST':
-        return api_send(environ, start_response)
+        result = api_send
     elif path == 'upload' and method == 'POST':
-        return api_upload(environ, start_response)
-    else:
-        return not_found(start_response)
+        result = api_upload
+    return result(environ, start_response)
 
-def serve_file(filename, start_response):
+def serve_file(environ, start_response):
     '''
     serve static file
     '''
+    filename = environ['PATH_INFO']
     filepath = os.path.join(STATIC_DIR, filename)
     if not os.path.exists(filepath):
         logging.error('%r not found', filepath)
@@ -267,9 +271,14 @@ def api_scan(environ, start_response):
         return json_response({'ok': False, 'error': str(err)},
                              start_response, '400 Bad Request')
 
-def api_qrdata(start_response):
+def api_qrdata(environ, start_response):  # pylint: disable=unused-argument
     '''return next QR data for browser to display'''
-    data = STATE.get_qrdata()
+    data = None
+    while not data:
+        data = STATE.get_qrdata()
+        if not data:
+            logging.debug('awaiting qrdata...')
+            time.sleep(1)
     return json_response({'data': data}, start_response)
 
 def api_send(environ, start_response):
