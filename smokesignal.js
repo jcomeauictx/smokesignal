@@ -94,10 +94,13 @@ window.addEventListener("load", function() {
     function setupPhone() {
         const upper = document.getElementById("phone-upper");
         const lower = document.getElementById("phone-lower");
-        if (upper.firstChild.offsetWidth == 0) {
+        const leftPanel = upper.firstElementChild;
+        const width = leftPanel.offsetWidth;
+        console.debug("left panel: " + leftPanel + ", width: " + width);
+        if (width == 0) {
             console.debug("looks like a phone");
-            lower.appendChild(...upper.firstChild.children);
-            lower.appendChild(...upper.lastChild.children);
+            lower.appendChild(...upper.firstElementChild.children);
+            lower.appendChild(...upper.lastElementChild.children);
             console.debug("moved children of left and right panels lower");
         } else {
             console.debug("doesn't appear to be a phone, left DOM as is");
