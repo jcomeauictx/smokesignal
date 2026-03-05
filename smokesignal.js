@@ -80,7 +80,7 @@ window.addEventListener("load", function() {
             const data = reader.result;
             for (let i = 0; i < data.length; i += 256) {
                 console.debug("showing chunk of " + file +
-                            " starting at index" + i);
+                            " starting at index " + i);
                 qrcode.makeCode(data.substring(i, i + 256));
             }
         };
