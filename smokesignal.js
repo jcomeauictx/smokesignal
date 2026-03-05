@@ -90,5 +90,6 @@ window.addEventListener("load", function() {
         reader.readAsArrayBuffer(file);
     }
     qrcode.makeCode("Smokesignal transceiving...");
+    document.getElementById("phone-lower").appendChild(document.getElementById("phone-upper").firstChild);
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
