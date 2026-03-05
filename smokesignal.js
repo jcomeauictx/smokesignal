@@ -14,6 +14,10 @@ window.addEventListener("load", function() {
 
     function onScanSuccess(decodedText, decodedResult) {
         console.debug("onScanSuccess() called");
+        console.debug("decodedText: " + decodedText +
+                    ", length: " + decodedText.length +
+                    ", decodedResult: " + decodedResult +
+                    ", lastResult" + lastResult);
         if (decodedText !== lastResult) {
             lastResult = decodedText;
             /* decodedText may be text; for binary protocol we need
