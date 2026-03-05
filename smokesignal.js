@@ -73,11 +73,11 @@ window.addEventListener("load", function() {
             return;
         }
         const file = input.files[0];
-        alert("about to send file " + file);
+        //alert("about to send file " + file); // disabled, this part now works
         const reader = new FileReader();
         reader.onload = function(event) {
             console.debug("file " + file + " has been read");
-            const data = reader.readAsBinaryString();
+            const data = reader.readAsBinaryString(file);
             for (let i=0; i < data.length; i+=256) {
                 qrcode.makeCode(data.substring(i, 256));
             }
