@@ -69,6 +69,16 @@ window.addEventListener("load", function() {
     }
     setInterval(pollQrData, 500);
 
+    /* ArrayBuffer to binary string */
+    // https://stackoverflow.com/a/71516276/493161
+
+    function bufferToString(buffer) {
+        const bytes = new Uint8Array(buffer);
+        return bytes.reduce(function (string, byte) {
+            return string + String.fromCharCode(byte);
+        }, "");
+    }
+
     /* Upload file to send */
     function uploadFile() {
         const input = document.getElementById("file-input");
@@ -81,29 +91,14 @@ window.addEventListener("load", function() {
         const reader = new FileReader();
         reader.onload = function(event) {
             console.debug("file " + file + " has been read");
-            const data = reader.result;
+            const data = bufferToString(reader.result);
             for (let i = 0; i < data.length; i += 256) {
                 console.debug("showing chunk of " + file +
-                            " starting at index " + i);
+                              " starting at index " + i);
                 qrcode.makeCode(data.substring(i, i + 256));
             }
         };
-        reader.readAsBinaryString(file);
-        if (false) {
-            const b64 = btoa(String.fromCharCode.apply(null,
-                new Uint8Array(e.target.result)));
-            fetch("/upload", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({data: b64, filename: file.name})
-            }).then(function(r) { return r.json(); })
-              .then(function(j) {
-                  if (j.ok) alert("Sending " + file.name);
-                  else alert("Error: " + j.error);
-              })
-              .catch(function(err) { alert("Upload failed: " + err); });
-        };
-        if (false) reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(file);
     }
 
     /* check if phone, and if so, make hidden elements visible */
