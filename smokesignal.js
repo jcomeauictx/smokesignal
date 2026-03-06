@@ -64,7 +64,8 @@ window.addEventListener("load", function() {
         if (decodedText !== lastScanned) {
             lastScanned = decodedText;  // updates webpage
             let hash = decodedText.slice(hashable);
-            let hashed = arrayDataHash(lastShown.slice(0, hashable));
+            let hashed = arrayDataHash(stringToBuffer(
+                lastShown.slice(0, hashable)));
             let data = dataBeingSent;
             if (hash == hashed) {
                 console.log("peer saw our current QR code");
@@ -100,6 +101,14 @@ window.addEventListener("load", function() {
         return bytes.reduce(function (string, byte) {
             return string + String.fromCharCode(byte);
         }, "");
+    }
+
+    /* binary string to ArrayBuffer */
+
+    function stringToBuffer(string) {
+        const buffer = new ArrayBuffer(string.length);
+        buffer.put(...string);
+        return buffer;
     }
 
     /* binary string (big-endian) to integer */
