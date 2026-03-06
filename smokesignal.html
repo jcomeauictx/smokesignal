@@ -10,21 +10,33 @@
 <script src="smokesignal.js"></script>
 </head>
 <body>
-<div id="phone-upper" class="qr-container">
-  <div class="qr-left hide-on-mobile">
-    <input type="file" id="file-input">
-    <button id="file-upload">Send</button>
+<div id="phone-upper" class="qr-container horizontal-layout">
+  <div class="qr-left vertical-layout hide-on-mobile">
+    <div class="vertical sent-text-container">
+      <div id="sent-text">(Sent QR text)</div>
+    </div>
+    <div class="vertical received-text-container">
+      <div id="received-text">(Scan results)</div>
+    </div>
   </div>
   <div id="qrcode"></div>
-  <div class="qr-right hide-on-mobile">
-    <div id="scan-results">(Scan results will appear here)</div>
-    <div id="qr-reader"></div>
+  <div class="qr-right vertical-layout hide-on-mobile">
+    <div class="vertical upload-container">
+      <input type="file" id="file-input">
+      <button id="file-upload">Send</button>
+    </div>
+    <div class="vertical qr-reader-container">
+      <div id="qr-reader"></div>
+    </div>
   </div>
 </div>
-<div id="phone-lower" class="vertical-layout show-on-mobile">
-  <div class="panel">
-  <div class="panel">
-  <div class="panel">
+<div id="phone-lower" class="horizontal-layout show-on-mobile">
+  <!-- when it's a phone, and in profile orientation, the top will only
+    show the QR code; the other fields will be moved below it -->
+  <div class="horizontal sent-text-container"></div>
+  <div class="horizontal received-text-container"></div>
+  <div class="horizontal upload-container"></div>
+  <div class="horizontal qr-reader-container"></div>
 </div>
 </body>
 </html>

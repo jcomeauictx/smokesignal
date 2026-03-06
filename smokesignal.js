@@ -52,7 +52,7 @@ window.addEventListener("load", function() {
     }
 
     /* scanner setup */
-    const resultContainer = document.getElementById("scan-results");
+    const resultContainer = document.getElementById("received-text");
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
 
     function onScanSuccess(decodedText, decodedResult) {
@@ -167,30 +167,32 @@ window.addEventListener("load", function() {
         xhr.sendAsBinary(packet);
     }
 
-    /* check if phone, and if so, make hidden elements visible */
-    function setupPhone() {
+    /* check layout, and move elements according to orientation */
+    function setupPage() {
         const upper = document.getElementById("phone-upper");
         const lower = document.getElementById("phone-lower");
-        const leftPanel = upper.firstElementChild;
-        const rightPanel = upper.lastElementChild;
-        const width = leftPanel.offsetWidth;
         /* width should be 0 on phone because that div is set display:none */
-        console.debug("left panel: " + leftPanel + ", width: " + width);
-        if (width == 0) {
-            console.debug("looks like a phone");
-            while (leftPanel.firstElementChild) {
-                lower.appendChild(leftPanel.firstElementChild)
-            }
-            while (rightPanel.firstElementChild) {
-                lower.appendChild(rightPanel.firstElementChild)
-            }
-            console.debug("moved children of left and right panels lower");
+        const landscape = upper.firstElementChild.offsetWidth;
+        let source, destination;
+        if (landscape) {
+            console.debug("looks horizontal (landscape)");
+            [source, destination] = [lower, upper];
         } else {
-            console.debug("doesn't appear to be a phone, left DOM as is");
+            console.debug("looks vertical (profile)");
+            [source, destination] = [upper, lower];
+        }
+        const boxes = ["sent-text", "received-text", "upload", "qr-reader"]
+        for (let i = 0; i < boxes.length; i++) {
+            let box = boxes[i] + "-container";
+            let from = source.getElementsByClassName(box)[0];
+            let to = destination.getElementsByClassName(box)[0];
+            console.debug("moving " + box + " from " + from + " to " + to);
+            to.append(...from.children);
         }
     }
     fileUpload.addEventListener("click", uploadFile);
-    setupPhone();
+    window.onresize = setupPage;
+    setupPage();
     showPacket(chunkToPacket("Smokesignal transceiving..."));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
