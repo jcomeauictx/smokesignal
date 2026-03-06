@@ -7,10 +7,10 @@ window.addEventListener("load", function() {
         correctLevel: QRCode.CorrectLevel.L
     });
     // ideally pull the following constants from smokesignal/wsgi
-    const chunkSize = 256;
+    const chunkSize = 128;
     const intSize = 4;
     const serialSize = 4;
-    const hashSize = 32;
+    const hashSize = arrayDataHash(new ArrayBuffer(0)).length;
     // set some state variables
     let lastQrData = null;
 
@@ -124,10 +124,10 @@ window.addEventListener("load", function() {
         reader.onload = function(event) {
             console.debug("file " + file + " has been read");
             const data = bufferToString(reader.result);
-            for (let i = 0; i < data.length; i += 256) {
+            for (let i = 0; i < data.length; i += chunkSize) {
                 console.debug("showing chunk of " + file +
                               " starting at index " + i);
-                qrcode.makeCode(data.substring(i, i + 256));
+                qrcode.makeCode(data.substring(i, i + chunkSize));
             }
         };
         reader.readAsArrayBuffer(file);
