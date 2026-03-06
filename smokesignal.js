@@ -16,7 +16,7 @@ window.addEventListener("load", function() {
     let lastScanned = null;
     let lastShown = null;
 
-    /* Convert a raw file chunk into a valid data packet */
+    /* convert a raw file chunk into a valid data packet */
     function chunkToPacket(chunk, serial) {
         const padding = bufferToString(
             new ArrayBuffer(chunkSize - chunk.length));
@@ -26,7 +26,7 @@ window.addEventListener("load", function() {
         return packedSerial + packedSize + chunk + padding + hashDigest;
     }
 
-    /* Display QR code and save in global `lastShown` */
+    /* display QR code and save in global `lastShown` */
     function showPacket(packet, updateHash=false) {
         if (updateHash)
             packet = packet.slice(0, hashable) + lastScanned.slice(hashable);
@@ -34,6 +34,7 @@ window.addEventListener("load", function() {
         lastShown = packet;
     };
 
+    /* break packed `packet` back down into components */
     function packetToData(packet) {
         let offset = serialSize;
         const serial = binaryStringToInteger(packet.slice(0, offset));
@@ -46,7 +47,7 @@ window.addEventListener("load", function() {
         return [serial, size, chunk, hash];
     }
 
-    /* Scanner setup */
+    /* scanner setup */
     const resultContainer = document.getElementById("scan-results");
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
 
@@ -78,7 +79,7 @@ window.addEventListener("load", function() {
         }, "");
     }
 
-    /* Binary string (big-endian) to integer */
+    /* binary string (big-endian) to integer */
 
     function binaryStringToInteger(string) {
         let result = 0;
@@ -88,12 +89,13 @@ window.addEventListener("load", function() {
         return result;
     }
 
+    /* hash of ArrayBuffer */
     async function arrayDataHash(data) {
         const hash = await window.crypto.subtle.digest("SHA-256", data);
         return bufferToString(hash);
     };
 
-    /* Integer to big-endian binary string */
+    /* integer to big-endian binary string */
     function integerToBinaryString(integer, length=4) {
         let result = "";
         for (let i = 0; i < length; i++) {
@@ -103,7 +105,7 @@ window.addEventListener("load", function() {
         return result;
     }
 
-    /* Send file to peer */
+    /* send file to peer */
     function uploadFile() {
         const input = document.getElementById("file-input");
         if (!input.files.length) {
