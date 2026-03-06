@@ -16,12 +16,14 @@
     }
     .vertical-layout {
         display: flex;
+        flex-direction: column;
     }
     .vertical {
         flex-grow: 1;
     }
     .horizontal-layout {
         display: flex;
+        flex-direction: row;
     }
     .horizontal {
         flex-grow: 1;  /* any positive number here will work */
@@ -35,12 +37,13 @@
         }
     }
     .qr-container {
+        display: flex;
         justify-content: center;
         width: 100%;
     }
     .qr-left, .qr-right {
         flex-grow: 1;  /* any positive number here will work */
-        margin: 0 10px;  /* left and right margins only */
+        margin: 10px;
     }
     #qr-reader {
         width: 100%;
@@ -51,7 +54,7 @@
         height: 98vmin;
     }
     #received-text, #sent-text {
-        margin: 10px 0;
+        margin: 10px;
         padding: 5px;
         background: #eee;
         word-break: break-all;
@@ -63,7 +66,7 @@
         padding: 8px 16px;
     }
     #file-input {
-        margin: 10px 0;
+        margin: 10px;
     }
 </style>
 /* vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
