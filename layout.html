@@ -12,8 +12,8 @@ html, body {
   height: 100%;
 }
 .qrcode {
-  width: 100%;
-  aspect-ratio: 1;
+  height: 98vmin;
+  width: 98vmin;
 }
 .middle {
   z-index: 5;
@@ -23,7 +23,7 @@ html, body {
 }
 .upper {
   display: grid;
-  grid-template-columns: 1fr minmax(0, 3fr) 1fr;
+  grid-template-columns: 1fr 98vmin 1fr;
   height: 100%;
 }
 .lower {
@@ -51,5 +51,12 @@ html, body {
     <div class="right">lower right</div>
   </div>
 </div>
+<script>
+window.addEventListener('orientationchange', function() {
+  document.body.style.display = 'none';
+  document.body.offsetHeight; // force Safari to recalculate vmin
+  document.body.style.display = '';
+});
+</script>
 </body>
 </html>
