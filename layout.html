@@ -2,16 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Layout experimentation</title>
+<title>Layout experimentation from MDN and Substack</title>
 <style>
+.container {
+  display: grid;
+}
+.container > div {
+  border-radius: 5px;
+  padding: 10px;
+  background-color: rgb(207 232 220);
+  border: 2px solid rgb(79 185 227);
+}
 </style>
 </head>
 <body>
-<div class="upper">
-  <div>Top</div>
-</div>
-<div class="lower">
-  <div>Bottom</div>
+<div class="container">
+  <div class="upper">
+    <div>Upper</div>
+  </div>
+  <div class="lower">
+    <div>Lower</div>
+  </div>
 </div>
 </body>
 </html>
