@@ -6,7 +6,34 @@ window.addEventListener("load", function() {
         height: qrcodeElement.offsetHeight,
         correctLevel: QRCode.CorrectLevel.L
     });
+    // ideally pull the following constants from smokesignal/wsgi
+    const chunkSize = 256;
+    const intSize = 4;
+    const serialSize = 4;
+    const hashSize = 32;
+    // set some state variables
     let lastQrData = null;
+
+    /* Convert a raw file chunk into a valid data packet */
+
+    function chunkToPacket(chunk, serial) {
+        const packedSerial = integerToBinaryString(serial, serialSize);
+        const packedSize = integerToBinaryString(chunk.length, intSize);
+        const hashDigest = "";  // need to calculate from lastQrData
+        return packedSerial + packedSize + chunk + hashDigest;
+    }
+
+    function packetToData(packet) {
+        let offset = serialSize;
+        const serial = binaryStringToInteger(packet.slice(0, offset));
+        const size = binaryStringToInteger(
+            packet.slice(offset, offset + intSize));
+        offset += intSize;
+        const chunk = packet.slice(offset, offset + chunkSize);
+        offset += chunkSize;
+        const hash = packet.slice(offset, offset + hashSize);
+        return [serial, size, chunk, hash];
+    }
 
     /* Scanner setup */
     const resultContainer = document.getElementById("scan-results");
@@ -49,26 +76,6 @@ window.addEventListener("load", function() {
         "qr-reader", {fps: 10, qrbox: 250});
     html5QrcodeScanner.render(onScanSuccess);
 
-    /* Poll backend for QR data to display to peer */
-    function pollQrData() {
-        fetch("/qrdata")
-            .then(function(r) { return r.json(); })
-            .then(function(j) {
-                if (j.data && j.data !== lastQrData) {
-                    lastQrData = j.data;
-                    /* data is base64-encoded binary; QRCode.js can
-                       handle raw strings, decode b64 to binary string */
-                    let raw = atob(j.data);
-                    qrcode.makeCode(raw);
-                } else if (!j.data && lastQrData) {
-                    lastQrData = null;
-                    qrcode.clear();
-                }
-            })
-            .catch(function(err) { console.error("poll failed:", err); });
-    }
-    setInterval(pollQrData, 500);
-
     /* ArrayBuffer to binary string */
     // https://stackoverflow.com/a/71516276/493161
 
@@ -88,6 +95,11 @@ window.addEventListener("load", function() {
         }
         return result;
     }
+
+    async function arrayDataHash(data) {
+        const hash = await window.crypto.subtle.digest("SHA-256", data);
+        return bufferToString(hash);
+    };
 
     /* Integer to big-endian binary string */
     function integerToBinaryString(integer, length=4) {
