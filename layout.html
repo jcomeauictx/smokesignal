@@ -4,10 +4,12 @@
 <meta charset="utf-8">
 <title>Layout experimentation from MDN and Substack</title>
 <style>
-.container {
+.upper {
   display: grid;
+  gride-template-columns: 1fr 100vmin 1fr;
+  height: 100%;
 }
-.container > div {
+.upper > div {
   border-radius: 5px;
   padding: 10px;
   background-color: rgb(207 232 220);
@@ -18,7 +20,9 @@
 <body>
 <div class="container">
   <div class="upper">
-    <div>Upper</div>
+    <div>upper left</div>
+    <div>upper middle</div>
+    <div>upper right</div>
   </div>
   <div class="lower">
     <div>Lower</div>
