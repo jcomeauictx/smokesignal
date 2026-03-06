@@ -6,10 +6,14 @@
 <style>
 .upper {
   display: grid;
-  gride-template-columns: 1fr 100vmin 1fr;
+  grid-template-columns: 1fr 100vmin 1fr;
   height: 100%;
 }
-.upper > div {
+.lower {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.upper, .lower > div {
   border-radius: 5px;
   padding: 10px;
   background-color: rgb(207 232 220);
@@ -25,7 +29,9 @@
     <div>upper right</div>
   </div>
   <div class="lower">
-    <div>Lower</div>
+    <div>lower left</div>
+    <div>lower middle</div>
+    <div>lower right</div>
   </div>
 </div>
 </body>
