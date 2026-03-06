@@ -10,18 +10,29 @@ window.addEventListener("load", function() {
     const chunkSize = 128;
     const intSize = 4;
     const serialSize = 4;
+    const hashable = serialSize + intSize + chunkSize;
     const hashSize = arrayDataHash(new ArrayBuffer(0)).length;
     // set some state variables
-    let lastQrData = null;
+    let lastScanned = null;
+    let lastShown = null;
 
     /* Convert a raw file chunk into a valid data packet */
-
     function chunkToPacket(chunk, serial) {
+        const padding = bufferToString(
+            new ArrayBuffer(chunkSize - chunk.length));
         const packedSerial = integerToBinaryString(serial, serialSize);
         const packedSize = integerToBinaryString(chunk.length, intSize);
-        const hashDigest = "";  // need to calculate from lastQrData
-        return packedSerial + packedSize + chunk + hashDigest;
+        const hashDigest = lastScanned.slice(hashable);
+        return packedSerial + packedSize + chunk + padding + hashDigest;
     }
+
+    /* Display QR code and save in global `lastShown` */
+    function showPacket(packet, updateHash=false) {
+        if (updateHash)
+            packet = packet.slice(0, hashable) + lastScanned.slice(hashable);
+        qrcode.makeCode(packet);
+        lastShown = packet;
+    };
 
     function packetToData(packet) {
         let offset = serialSize;
@@ -37,38 +48,19 @@ window.addEventListener("load", function() {
 
     /* Scanner setup */
     const resultContainer = document.getElementById("scan-results");
-    let lastResult = null;
+    lastScanned = bufferToString(new ArrayBuffer(chunkSize));
 
     function onScanSuccess(decodedText, decodedResult) {
         console.debug("onScanSuccess() called");
         console.debug("decodedText: " + decodedText +
                     ", length: " + decodedText.length +
                     ", decodedResult: " + decodedResult +
-                    ", lastResult" + lastResult);
-        if (decodedText !== lastResult) {
-            lastResult = decodedText;
-            /* decodedText may be text; for binary protocol we need
-               to base64-encode it for transport to the backend.
-               html5-qrcode gives us text, so we encode to base64. */
-            let b64;
-            b64 = btoa(decodedText);
-            /* it may contain chars > 255, so encode via TextEncoder */
-            const bytes = new TextEncoder().encode(decodedText);
-            b64 = btoa(String.fromCharCode.apply(null, bytes));
-            resultContainer.textContent = decodedText;
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "/scan", true);
-            xhr.onload = function() {
-                if (xhr.status == 200) {
-                    console.log("/scan post successful");
-                } else {
-                    console.error("/scan post status: " + xhr.status);
-                }
-            };
-            xhr.onerror = function() {
-                console.error("/scan post failed");
-            };
-            xhr.send(JSON.stringify({data: b64}));
+                    ", lastScanned" + lastScanned);
+        if (decodedText !== lastScanned) {
+            lastScanned = decodedText;
+            // redisplay current outgoing QR code with updated hash
+            // it's what lets peer know we saw its last code
+            showPacket(lastShown, true);
         }
     }
 
@@ -124,10 +116,12 @@ window.addEventListener("load", function() {
         reader.onload = function(event) {
             console.debug("file " + file + " has been read");
             const data = bufferToString(reader.result);
-            for (let i = 0; i < data.length; i += chunkSize) {
-                console.debug("showing chunk of " + file +
+            for (let i = 0, j = 0; i < data.length; i += 256, j++) {
+                console.debug("showing chunk " + j + " of " + file +
                               " starting at index " + i);
-                qrcode.makeCode(data.substring(i, i + chunkSize));
+                showPacket(chunkToPacket(
+                    data.substring(i, i + chunkSize), j)
+                );
             }
         };
         reader.readAsArrayBuffer(file);
@@ -157,6 +151,6 @@ window.addEventListener("load", function() {
     }
     fileUpload.addEventListener("click", uploadFile);
     setupPhone();
-    qrcode.makeCode("Smokesignal transceiving...");
+    showPacket(chunkToPacket("Smokesignal transceiving..."));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
