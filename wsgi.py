@@ -244,7 +244,7 @@ def serve_file(environ, start_response):
     filepath = os.path.join(STATIC_DIR, filename)
     if not os.path.exists(filepath):
         logging.error('%r not found', filepath)
-        return not_found(start_response)
+        return not_found(environ, start_response)
     content_types = {
         '.html': 'text/html', '.js': 'application/javascript',
         '.css': 'text/css', '.png': 'image/png',
@@ -328,7 +328,7 @@ def api_upload(environ, start_response):
         return json_response({'ok': False, 'error': str(err)},
                              start_response, '400 Bad Request')
 
-def not_found(start_response):
+def not_found(environ, start_response):  # pylint: disable=unused-argument
     '''
     404 Not Found
     '''
