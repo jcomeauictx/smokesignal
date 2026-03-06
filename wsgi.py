@@ -7,10 +7,7 @@ This backend manages the protocol state and file I/O.
 
 endpoints:
     GET  /              - serve index.html
-    POST /scan          - browser sends decoded QR data to backend
-    GET  /qrdata        - backend sends next QR code data to browser
-    POST /send          - initiate sending a file
-    POST /upload        - upload a file to send
+    POST /save          - browser sends decoded QR data to backend
     GET  <file>         - serve JS/CSS files
 
 for iSH/iPhone: run with
@@ -20,6 +17,8 @@ or for testing:
 '''
 import os, json, logging  # pylint: disable=multiple-imports
 import posixpath as wwwpath  # pylint: disable=multiple-imports
+from threading import Thread
+from select import select
 from smokesignal import newpath, SERIAL_BYTES, LENGTH_BYTES
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
@@ -132,7 +131,25 @@ def serve_file(environ, start_response):
     ])
     return [body]
 
+def background():
+    '''
+    iPhone trick for running from iSH
+
+    runs in separate thread to keep server active while browser in foreground
+    '''
+    try:
+        with open('/dev/location', encoding='utf-8') as infile:
+            logging.debug('keepalive thread launched in background')
+            while select([infile], [], [infile]):
+                location = infile.read()
+                logging.debug('location: %r', location)
+                if not location:
+                    break
+    except FileNotFoundError:
+        logging.debug('no /dev/location file found')
+
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
+    Thread(target=background, daemon=True).start()
     print('serving on http://127.0.0.1:8080')
     make_server('127.0.0.1', 8080, application).serve_forever()
