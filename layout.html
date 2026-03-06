@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Layout experimentation from MDN and Substack</title>
 <style>
 html, body {
@@ -13,6 +14,12 @@ html, body {
 .qrcode {
   height: 98vmin;
   width: 98vmin;
+}
+.middle {
+  z-index: 5;
+}
+.left, .right {
+  z-index: 3;
 }
 .upper {
   display: grid;
@@ -34,14 +41,14 @@ html, body {
 <body>
 <div class="container">
   <div class="upper">
-    <div>upper left</div>
+    <div class="left">upper left</div>
     <div class="qrcode">upper middle</div>
-    <div>upper right</div>
+    <div class="right">upper right</div>
   </div>
   <div class="lower">
-    <div>lower left</div>
-    <div>lower middle</div>
-    <div>lower right</div>
+    <div class="left">lower left</div>
+    <div class="middle">lower middle</div>
+    <div class="right">lower right</div>
   </div>
 </div>
 </body>
