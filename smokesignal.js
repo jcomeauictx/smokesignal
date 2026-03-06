@@ -15,6 +15,8 @@ window.addEventListener("load", function() {
     // set some state variables
     let lastScanned = null;
     let lastShown = null;
+    let dataBeingSent = null;
+    let currentDataSerial = 0;
 
     /* convert a raw file chunk into a valid data packet */
     function chunkToPacket(chunk, serial) {
@@ -58,9 +60,26 @@ window.addEventListener("load", function() {
                     ", decodedResult: " + decodedResult +
                     ", lastScanned" + lastScanned);
         if (decodedText !== lastScanned) {
-            lastScanned = decodedText;
+            lastScanned = decodedText;  // updates webpage
+            let hash = decodedText.slice(hashable);
+            let hashed = arrayDataHash(lastShown.slice(0, hashable));
+            let data = dataBeingSent;
+            if (hash == hashed) {
+                console.log("peer saw our current QR code");
+                if (data != null) {
+                    let serial = ++currentDataSerial;
+                    let offset = serial * chunkSize;
+                    let chunk = data.slice(offset, offset + chunkSize);
+                    if (!chunk) {
+                        console.debug("file upload complete");
+                        dataBeingSent = null;
+                        currentDataSerial = 0;
+                    } else lastShown = chunkToPacket(chunk, serial);
+                } else console.debug("acking placeholder QR code on peer");
+            }
             // redisplay current outgoing QR code with updated hash
-            // it's what lets peer know we saw its last code
+            // it's what lets peer know we saw its last code, AND
+            // if lastShown was updated above, it sends new packet to peer
             showPacket(lastShown, true);
         }
     }
@@ -117,14 +136,10 @@ window.addEventListener("load", function() {
         const reader = new FileReader();
         reader.onload = function(event) {
             console.debug("file " + file + " has been read");
-            const data = bufferToString(reader.result);
-            for (let i = 0, j = 0; i < data.length; i += 256, j++) {
-                console.debug("showing chunk " + j + " of " + file +
-                              " starting at index " + i);
-                showPacket(chunkToPacket(
-                    data.substring(i, i + chunkSize), j)
-                );
-            }
+            dataBeingSent = bufferToString(reader.result);
+            currentDataSerial = 0;
+            // show first packet; the rest will be event-driven
+            showPacket(chunkToPacket(dataBeingSent.slice(0, chunkSize), 0));
         };
         reader.readAsArrayBuffer(file);
     }
