@@ -12,8 +12,8 @@ html, body {
   height: 100%;
 }
 .qrcode {
-  height: 98vmin;
-  width: 98vmin;
+  width: 100%;
+  aspect-ratio: 1;
 }
 .middle {
   z-index: 5;
@@ -23,7 +23,7 @@ html, body {
 }
 .upper {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 98vmin 1fr;
   height: 100%;
 }
 .lower {
