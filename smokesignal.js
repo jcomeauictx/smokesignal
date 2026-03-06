@@ -6,6 +6,8 @@ window.addEventListener("load", function() {
         height: qrcodeElement.offsetHeight,
         correctLevel: QRCode.CorrectLevel.L
     });
+    // for third arg to xhr.open, can never remember what it's for
+    const asynchronous = true, synchronous = false;
     // ideally pull the following constants from smokesignal/wsgi
     const chunkSize = 128;
     const intSize = 4;
@@ -81,6 +83,8 @@ window.addEventListener("load", function() {
             // it's what lets peer know we saw its last code, AND
             // if lastShown was updated above, it sends new packet to peer
             showPacket(lastShown, true);
+            // save newly received packet
+            savePacket(lastScanned);
         }
     }
 
@@ -142,6 +146,16 @@ window.addEventListener("load", function() {
             showPacket(chunkToPacket(dataBeingSent.slice(0, chunkSize), 0));
         };
         reader.readAsArrayBuffer(file);
+    }
+
+    /* save chunk to device, only thing we can't do in JavaScript */
+    function savePacket(packet) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/save", asynchronous);
+        xhr.onload = function(eventInstance) {
+            console.log("POST to /save returned " + xhr.response);
+        };
+        xhr.sendAsBinary(packet);
     }
 
     /* check if phone, and if so, make hidden elements visible */
