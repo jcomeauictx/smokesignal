@@ -4,9 +4,19 @@
 <meta charset="utf-8">
 <title>Layout experimentation from MDN and Substack</title>
 <style>
+html, body {
+  box-sizing: border-box;
+  margin: .5vmin;
+  padding: 0;
+  height: 100%;
+}
+.qrcode {
+  height: 98vmin;
+  width: 98vmin;
+}
 .upper {
   display: grid;
-  grid-template-columns: 1fr 100vmin 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   height: 100%;
 }
 .lower {
@@ -25,7 +35,7 @@
 <div class="container">
   <div class="upper">
     <div>upper left</div>
-    <div>upper middle</div>
+    <div class="qrcode">upper middle</div>
     <div>upper right</div>
   </div>
   <div class="lower">
