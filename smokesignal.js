@@ -111,7 +111,7 @@ window.addEventListener("load", function() {
     /* clean up binary string for console logging */
 
     function printable(string) {
-        return string.replace(/[^\r\n\x21-\x7E]/g, ".")
+        return string.replace(/[^\r\n\x20-\x7E]/g, ".")
                      .replace(/[\r]/g, "\r")
                      .replace(/[\n]/g, "\n")
     }
@@ -121,11 +121,11 @@ window.addEventListener("load", function() {
     }
 
     function compressSpaces(string) {
-        return string.replaceAll(/ +/g, " ");
+        return string.replace(/ +/g, " ");
     }
 
     function cleanup(string) {
-        return compressSpaces(printable(string));
+        return compressSpaces(oneline(string));
     }
     /* ArrayBuffer to binary string */
     // https://stackoverflow.com/a/71516276/493161
@@ -243,5 +243,7 @@ window.addEventListener("load", function() {
         binaryStringToInteger("\xff\xff\xff\xff"));
     let testString = "\0\0\0\0\0\0\0\x10\xc3\xbf\xff\xffabcd\xff\xee\xdd\xcc";
     console.debug("printable(" + testString + "): " + printable(testString));
+    testString = '{\n  "api": "blather",\n  "qrs": "tuv": {\n    "xyz": null}}'
+    console.debug("cleanup(" + testString + "): " + cleanup(testString));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
