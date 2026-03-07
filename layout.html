@@ -12,14 +12,12 @@ html, body {
   height: 100%;
 }
 .qrcode {
-  height: 98vmin;
-  width: 98vmin;
+  width: 100%;
+  aspect-ratio: 1;
 }
 .middle {
-  z-index: 5;
 }
 .left, .right {
-  z-index: 3;
 }
 .upper {
   display: grid;
@@ -37,6 +35,13 @@ html, body {
   border: 2px solid rgb(79 185 227);
 }
 </style>
+<script>
+window.addEventListener('orientationchange', function() {
+  document.body.style.display = 'none';
+  document.body.offsetHeight; // force Safari to recalculate vmin
+  document.body.style.display = '';
+});
+</script>
 </head>
 <body>
 <div class="container">
@@ -51,12 +56,5 @@ html, body {
     <div class="right">lower right</div>
   </div>
 </div>
-<script>
-window.addEventListener('orientationchange', function() {
-  document.body.style.display = 'none';
-  document.body.offsetHeight; // force Safari to recalculate vmin
-  document.body.style.display = '';
-});
-</script>
 </body>
 </html>
