@@ -38,11 +38,11 @@ window.addEventListener("load", function() {
                 oldhash = packet.slice(hashable),
                 newhash = lastScanned.slice(hashable);
             console.debug("changing packet hash from " +
-                cleanup(oldhash) + " to " + cleanup(newhash)
+                printable(oldhash) + " to " + printable(newhash)
             );
             packet = data + newhash;
         }
-        console.debug("posting new QR code: " + cleanup(packet));
+        console.debug("posting new QR code: " + printable(packet));
         qrcode.makeCode(packet);
         sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
@@ -64,6 +64,9 @@ window.addEventListener("load", function() {
     /* scanner setup */
     const resultContainer = document.getElementById("received-text");
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader", {fps: 10, qrbox: 250});
+    html5QrcodeScanner.render(onScanSuccess);
 
     /* process successfully scanned QR code */
     async function onScanSuccess(decodedText, decodedResult) {
@@ -105,16 +108,25 @@ window.addEventListener("load", function() {
         }
     }
 
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader", {fps: 10, qrbox: 250});
-    html5QrcodeScanner.render(onScanSuccess);
+    /* clean up binary string for console logging */
 
-    /* cleaned up binary string for console logging */
-    function cleanup(string) {
-        return string.replaceAll(/[^\x21-\x7E]+/g, ".")
-                     .replaceAll(/[ ]+/g, " ");
+    function printable(string) {
+        return string.replace(/[^\r\n\x21-\x7E]/g, ".")
+                     .replace(/[\r]/g, "\r")
+                     .replace(/[\n]/g, "\n")
     }
 
+    function oneline(string) {
+        return string.replace(/[\r\n]+/g, " ");
+    }
+
+    function compressSpaces(string) {
+        return string.replaceAll(/ +/g, " ");
+    }
+
+    function cleanup(string) {
+        return compressSpaces(printable(string));
+    }
     /* ArrayBuffer to binary string */
     // https://stackoverflow.com/a/71516276/493161
 
@@ -229,5 +241,7 @@ window.addEventListener("load", function() {
     console.debug("unpacked \0\0\0\0: " + binaryStringToInteger("\0\0\0\0"));
     console.debug("unpacked \xff\xff\xff\xff: " +
         binaryStringToInteger("\xff\xff\xff\xff"));
+    let testString = "\0\0\0\0\0\0\0\x10\xc3\xbf\xff\xffabcd\xff\xee\xdd\xcc";
+    console.debug("printable(" + testString + "): " + printable(testString));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
