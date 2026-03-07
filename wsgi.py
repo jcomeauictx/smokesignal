@@ -75,7 +75,9 @@ def api_save(environ, start_response):
     status = '400 bad request'
     try:
         payload = read_body(environ)
-        logging.debug('raw save data: %r', payload)
+        content_type = environ.get('CONTENT_TYPE', '')
+        logging.debug('content-type: %s, raw save data: %r',
+                      content_type, payload)
         serial = int.from_bytes(payload[offset:SERIAL_BYTES])
         response['serial'] = serial
         offset += SERIAL_BYTES

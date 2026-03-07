@@ -42,7 +42,7 @@ window.addEventListener("load", function() {
             );
             packet = data + newhash;
         }
-        console.debug("posting new QR code: " + printable(packet));
+        console.debug("displaying new QR code: " + printable(packet));
         qrcode.makeCode(packet);
         sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
@@ -200,8 +200,9 @@ window.addEventListener("load", function() {
         xhr.open("POST", "/save", asynchronous);
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.onload = function(event) {
-            console.log("POST to /save returned " + xhr.response);
+            console.debug("POST to /save returned " + xhr.response);
         };
+        console.debug("POSTing: " + packet);
         xhr.send(packet);
     }
 
