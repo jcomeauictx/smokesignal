@@ -111,9 +111,9 @@ window.addEventListener("load", function() {
     /* clean up binary string for console logging */
 
     function printable(string) {
-        return string.replace(/[^\r\n\x20-\x7E]/g, ".")
-                     .replace(/[\r]/g, "\r")
-                     .replace(/[\n]/g, "\n")
+        return string.replace(/[^\r\n\x20-\x7E]/g, function(match) {
+            return "\\x" + match.charCodeAt(0).toString(16).padStart(2, "0")
+        }).replace(/[\r]/g, "\r").replace(/[\n]/g, "\n");
     }
 
     function oneline(string) {
