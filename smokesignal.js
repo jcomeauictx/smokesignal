@@ -1,4 +1,5 @@
 window.addEventListener("load", function() {
+    const placeholder = "smokesignal transceiving...";
     const fileUpload = document.getElementById("file-upload");
     const qrcodeElement = document.getElementById("qrcode");
     const qrcode = new QRCode(qrcodeElement, {
@@ -32,8 +33,16 @@ window.addEventListener("load", function() {
 
     /* display QR code and save in global `lastShown` */
     function showPacket(packet, updateHash=false) {
-        if (updateHash)
-            packet = packet.slice(0, hashable) + lastScanned.slice(hashable);
+        if (updateHash) {
+            let data = packet.slice(0, hashable),
+                oldhash = packet.slice(hashable),
+                newhash = lastScanned.slice(hashable);
+            console.debug("changing packet hash from " +
+                printable(oldhash) + " to " + printable(newhash)
+            );
+            packet = data + newhash;
+        }
+        console.debug("displaying new QR code: " + printable(packet));
         qrcode.makeCode(packet);
         sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
@@ -55,17 +64,24 @@ window.addEventListener("load", function() {
     /* scanner setup */
     const resultContainer = document.getElementById("received-text");
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader", {fps: 10, qrbox: 250});
+    html5QrcodeScanner.render(onScanSuccess);
 
     /* process successfully scanned QR code */
     async function onScanSuccess(decodedText, decodedResult) {
-        if (decodedText !== lastScanned) {
+        console.debug("decodedResult: " +
+            printable(JSON.stringify(decodedResult))
+        );
+        const rawBytes = decodedResult.text;
+        if (rawBytes !== lastScanned) {
             console.debug(
-                "decodedText: " + cleanup(decodedText) +
-                ", length: " + decodedText.length +
+                "decoded: " + printable(rawBytes) +
+                ", length: " + rawBytes.length +
                 ", lastScanned: " + cleanup(lastScanned)
             );
-            resultContainer.textContent = lastScanned = decodedText;
-            let hash = decodedText.slice(hashable);
+            resultContainer.textContent = lastScanned = rawBytes;
+            let hash = rawBytes.slice(hashable);
             console.debug("getting hash of scanned packet");
             let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
@@ -96,16 +112,25 @@ window.addEventListener("load", function() {
         }
     }
 
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader", {fps: 10, qrbox: 250});
-    html5QrcodeScanner.render(onScanSuccess);
+    /* clean up binary string for console logging */
 
-    /* cleaned up binary string for console logging */
-    function cleanup(string) {
-        return string.replaceAll(/[^\x21-\x7E]+/g, ".")
-                     .replaceAll(/[ ]+/g, " ");
+    function printable(string) {
+        return string.replace(/[^\r\n\x20-\x7E]/g, function(match) {
+            return "\\x" + match.charCodeAt(0).toString(16).padStart(2, "0")
+        }).replace(/[\r]/g, "\r").replace(/[\n]/g, "\n");
     }
 
+    function oneline(string) {
+        return string.replace(/[\r\n]+/g, " ");
+    }
+
+    function compressSpaces(string) {
+        return string.replace(/ +/g, " ");
+    }
+
+    function cleanup(string) {
+        return compressSpaces(oneline(string));
+    }
     /* ArrayBuffer to binary string */
     // https://stackoverflow.com/a/71516276/493161
 
@@ -132,7 +157,7 @@ window.addEventListener("load", function() {
     function binaryStringToInteger(string) {
         let result = 0;
         for (let i = 0; i < string.length; i++) {
-            result = (result << 8) + string.charCodeAt(i);
+            result = (result * 0x100) + string.charCodeAt(i);
         }
         return result;
     }
@@ -177,9 +202,11 @@ window.addEventListener("load", function() {
     function savePacket(packet) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/save", asynchronous);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.onload = function(event) {
-            console.log("POST to /save returned " + xhr.response);
+            console.debug("POST to /save returned " + xhr.response);
         };
+        console.debug("POSTing: " + printable(packet));
         xhr.send(packet);
     }
 
@@ -199,16 +226,30 @@ window.addEventListener("load", function() {
         }
         const boxes = ["sent-text", "received-text", "upload", "qr-reader"]
         for (let i = 0; i < boxes.length; i++) {
-            let box = boxes[i] + "-container";
-            let from = source.getElementsByClassName(box)[0];
-            let to = destination.getElementsByClassName(box)[0];
+            let box = boxes[i] + "-container",
+                from = source.getElementsByClassName(box)[0],
+                to = destination.getElementsByClassName(box)[0];
             console.debug("moving " + box + " from " + from + " to " + to);
             to.append(...from.children);
         }
     }
     fileUpload.addEventListener("click", uploadFile);
-    window.onresize = setupPage;
+    // enable page reshuffling on resize and orientationchange
+    window.onresize = window.onorientationchange = setupPage;
+    // and set it up now, at load time
     setupPage();
-    showPacket(chunkToPacket("Smokesignal transceiving..."));
+    // show a placeholder barcode now
+    showPacket(chunkToPacket(placeholder));
+    // run some tests on subroutines in lieu of doctests
+    console.debug("packed integer 0: " + integerToBinaryString(0));
+    console.debug("packed integer 0xffffffff: " +
+        integerToBinaryString(0xffffffff));
+    console.debug("unpacked \0\0\0\0: " + binaryStringToInteger("\0\0\0\0"));
+    console.debug("unpacked \xff\xff\xff\xff: " +
+        binaryStringToInteger("\xff\xff\xff\xff"));
+    let testString = "\0\0\0\0\0\0\0\x10\xc3\xbf\xff\xffabcd\xff\xee\xdd\xcc";
+    console.debug("printable(" + testString + "): " + printable(testString));
+    testString = '{\n  "api": "blather",\n  "qrs": "tuv": {\n    "xyz": null}}'
+    console.debug("cleanup(" + testString + "): " + cleanup(testString));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
