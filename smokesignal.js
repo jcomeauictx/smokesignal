@@ -62,7 +62,7 @@ window.addEventListener("load", function() {
                         ", length: " + decodedText.length +
                         ", decodedResult: " + decodedResult +
                         ", lastScanned" + lastScanned.replace(
-                            /[^\x20-\x7E]/g, ' '
+                            /[^\x20-\x7E]+/g, '.'
                         )
             );
             resultContainer.textContent = lastScanned = decodedText;
