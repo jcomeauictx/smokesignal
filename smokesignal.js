@@ -222,5 +222,12 @@ window.addEventListener("load", function() {
     setupPage();
     // show a placeholder barcode now
     showPacket(chunkToPacket(placeholder));
+    // run some tests on subroutines in lieu of doctests
+    console.debug("packed integer 0: " + integerToBinaryString(0));
+    console.debug("packed integer 0xffffffff: " +
+        integerToBinaryString(0xffffffff));
+    console.debug("unpacked \0\0\0\0: " + binaryStringToInteger("\0\0\0\0"));
+    console.debug("unpacked \xff\xff\xff\xff: " +
+        binaryStringToInteger("\xff\xff\xff\xff"));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
