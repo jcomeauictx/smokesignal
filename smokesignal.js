@@ -198,6 +198,7 @@ window.addEventListener("load", function() {
     function savePacket(packet) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/save", asynchronous);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.onload = function(event) {
             console.log("POST to /save returned " + xhr.response);
         };
