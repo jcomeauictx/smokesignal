@@ -72,7 +72,7 @@ window.addEventListener("load", function() {
     async function onScanSuccess(decodedText, decodedResult) {
         if (decodedText !== lastScanned) {
             console.debug(
-                "decodedText: " + cleanup(decodedText) +
+                "decodedText: " + printable(decodedText) +
                 ", length: " + decodedText.length +
                 ", lastScanned: " + cleanup(lastScanned)
             );
