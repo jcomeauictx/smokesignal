@@ -35,7 +35,8 @@ window.addEventListener("load", function() {
         if (updateHash)
             packet = packet.slice(0, hashable) + lastScanned.slice(hashable);
         qrcode.makeCode(packet);
-        lastShown = packet;
+        sentText = document.getElementByTagName("sent-text");
+        sentText.textContent = lastShown = packet;
     };
 
     /* break packed `packet` back down into components */
@@ -62,7 +63,7 @@ window.addEventListener("load", function() {
                     ", decodedResult: " + decodedResult +
                     ", lastScanned" + lastScanned);
         if (decodedText !== lastScanned) {
-            lastScanned = decodedText;  // updates webpage
+            resultContainer.textContent = lastScanned = decodedText;
             let hash = decodedText.slice(hashable);
             let hashed = arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable)));
