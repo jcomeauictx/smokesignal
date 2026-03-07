@@ -35,7 +35,7 @@ window.addEventListener("load", function() {
         if (updateHash)
             packet = packet.slice(0, hashable) + lastScanned.slice(hashable);
         qrcode.makeCode(packet);
-        sentText = document.getElementByTagName("sent-text");
+        sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
     };
 
