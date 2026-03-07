@@ -202,7 +202,7 @@ window.addEventListener("load", function() {
         xhr.onload = function(event) {
             console.debug("POST to /save returned " + xhr.response);
         };
-        console.debug("POSTing: " + packet);
+        console.debug("POSTing: " + printable(packet));
         xhr.send(packet);
     }
 
