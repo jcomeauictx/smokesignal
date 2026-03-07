@@ -74,9 +74,9 @@ def api_save(environ, start_response):
     offset = 0
     try:
         payload = read_body(environ)
-        serial = int.from_bytes('big', payload[offset:SERIAL_BYTES])
+        serial = int.from_bytes(payload[offset:SERIAL_BYTES])
         offset += SERIAL_BYTES
-        length = int.from_bytes('big', payload[offset:offset + LENGTH_BYTES])
+        length = int.from_bytes(payload[offset:offset + LENGTH_BYTES])
         offset += LENGTH_BYTES
         chunk = payload[offset:offset + length]
         response = {}
