@@ -1,5 +1,5 @@
 window.addEventListener("load", function() {
-    const placeholder = "smokesignal transceiving...");
+    const placeholder = "smokesignal transceiving...";
     const fileUpload = document.getElementById("file-upload");
     const qrcodeElement = document.getElementById("qrcode");
     const qrcode = new QRCode(qrcodeElement, {
