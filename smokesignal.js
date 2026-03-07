@@ -57,12 +57,14 @@ window.addEventListener("load", function() {
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
 
     function onScanSuccess(decodedText, decodedResult) {
-        console.debug("onScanSuccess() called");
-        console.debug("decodedText: " + decodedText +
-                    ", length: " + decodedText.length +
-                    ", decodedResult: " + decodedResult +
-                    ", lastScanned" + lastScanned);
         if (decodedText !== lastScanned) {
+            console.debug("decodedText: " + decodedText +
+                        ", length: " + decodedText.length +
+                        ", decodedResult: " + decodedResult +
+                        ", lastScanned" + lastScanned.replace(
+                            /[^\x20-\x7E]/g, ' '
+                        )
+            );
             resultContainer.textContent = lastScanned = decodedText;
             let hash = decodedText.slice(hashable);
             let hashed = arrayDataHash(stringToBuffer(
