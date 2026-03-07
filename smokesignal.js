@@ -70,14 +70,15 @@ window.addEventListener("load", function() {
 
     /* process successfully scanned QR code */
     async function onScanSuccess(decodedText, decodedResult) {
-        if (decodedText !== lastScanned) {
+        const rawBytes = decodedResult.getRawBytes;
+        if (rawBytes !== lastScanned) {
             console.debug(
-                "decodedText: " + printable(decodedText) +
-                ", length: " + decodedText.length +
+                "decoded: " + printable(rawBytes) +
+                ", length: " + rawBytes.length +
                 ", lastScanned: " + cleanup(lastScanned)
             );
-            resultContainer.textContent = lastScanned = decodedText;
-            let hash = decodedText.slice(hashable);
+            resultContainer.textContent = lastScanned = rawBytes;
+            let hash = rawBytes.slice(hashable);
             console.debug("getting hash of scanned packet");
             let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
