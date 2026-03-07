@@ -67,8 +67,11 @@ window.addEventListener("load", function() {
             );
             resultContainer.textContent = lastScanned = decodedText;
             let hash = decodedText.slice(hashable);
+            console.debug("getting hash of scanned packet");
             let hashed = arrayDataHash(stringToBuffer(
-                lastShown.slice(0, hashable)));
+                lastShown.slice(0, hashable))
+            );
+            console.debug("comparing packet hash to hash of our QR code");
             let data = dataBeingSent;
             if (hash == hashed) {
                 console.log("peer saw our current QR code");
