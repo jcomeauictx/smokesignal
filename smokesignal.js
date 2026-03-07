@@ -70,8 +70,10 @@ window.addEventListener("load", function() {
 
     /* process successfully scanned QR code */
     async function onScanSuccess(decodedText, decodedResult) {
-        console.debug("decodedResult: " + JSON.stringify(decodedResult));
-        const rawBytes = decodedResult.rawBytes;
+        console.debug("decodedResult: " +
+            printable(JSON.stringify(decodedResult))
+        );
+        const rawBytes = decodedResult.text;
         if (rawBytes !== lastScanned) {
             console.debug(
                 "decoded: " + printable(rawBytes) +
