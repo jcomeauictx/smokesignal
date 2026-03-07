@@ -102,7 +102,8 @@ window.addEventListener("load", function() {
 
     /* cleaned up binary string for console logging */
     function cleanup(string) {
-        return string.replace(/[^\x20-\x7E]+/g, '.');
+        return string.replaceAll(/[^\x21-\x7E]+/g, ".")
+                     .replaceAll(/[ ]+/g, " ");
     }
 
     /* ArrayBuffer to binary string */
