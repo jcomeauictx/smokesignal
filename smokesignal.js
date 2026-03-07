@@ -13,7 +13,7 @@ window.addEventListener("load", function() {
     const intSize = 4;
     const serialSize = 4;
     const hashable = serialSize + intSize + chunkSize;
-    const hashSize = arrayDataHash(new ArrayBuffer(0)).length;
+    const hashSize = 32;  // SHA-256 always produces 32 bytes
     // set some state variables
     let lastScanned = null;
     let lastShown = null;
@@ -57,7 +57,7 @@ window.addEventListener("load", function() {
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
 
     /* process successfully scanned QR code */
-    function onScanSuccess(decodedText, decodedResult) {
+    async function onScanSuccess(decodedText, decodedResult) {
         if (decodedText !== lastScanned) {
             console.debug(
                 "decodedText: " + cleanup(decodedText) +
@@ -67,7 +67,7 @@ window.addEventListener("load", function() {
             resultContainer.textContent = lastScanned = decodedText;
             let hash = decodedText.slice(hashable);
             console.debug("getting hash of scanned packet");
-            let hashed = arrayDataHash(stringToBuffer(
+            let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
             );
             console.debug("comparing packet hash to hash of our QR code");
@@ -119,7 +119,10 @@ window.addEventListener("load", function() {
 
     function stringToBuffer(string) {
         const buffer = new ArrayBuffer(string.length);
-        buffer.put(...string);
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < string.length; i++) {
+            bytes[i] = string.charCodeAt(i);
+        }
         return buffer;
     }
 
