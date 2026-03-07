@@ -48,7 +48,6 @@ def application(environ, start_response):
         result = api_save
     return result(environ, start_response)
 
-
 def json_response(data, start_response, status='200 OK'):
     '''
     helper for JSON responses
@@ -72,14 +71,18 @@ def api_save(environ, start_response):
     browser sends us chunk of data to save
     '''
     offset = 0
+    response = {'ok': False, 'error': None}
+    status = '400 bad request'
     try:
         payload = read_body(environ)
+        console.debug('raw save data: %r', payload)
         serial = int.from_bytes(payload[offset:SERIAL_BYTES])
+        response['serial'] = serial
         offset += SERIAL_BYTES
         length = int.from_bytes(payload[offset:offset + LENGTH_BYTES])
+        response['length'] = length
         offset += LENGTH_BYTES
         chunk = payload[offset:offset + length]
-        response = {}
         if serial == 0 and length:
             # pylint: disable=consider-using-with
             STATE['outfile'] = open(newpath(), 'wb')
@@ -91,11 +94,12 @@ def api_save(environ, start_response):
             STATE['outfile'].close()
             STATE['outfile'] = None
             response['complete'] = True
-        return json_response(response, start_response)
-    except (ValueError, KeyError) as err:
-        logging.error('bad scan payload: %s', err)
-        return json_response({'ok': False, 'error': str(err)},
-                             start_response, '400 Bad Request')
+        status = '200 success'
+        response['ok'] = True
+    except (ValueError, KeyError) as error:
+        logging.error('bad scan payload: %s', error)
+        response['error'] = error
+    return json_response(response, start_response, status)
 
 def not_found(environ, start_response):  # pylint: disable=unused-argument
     '''

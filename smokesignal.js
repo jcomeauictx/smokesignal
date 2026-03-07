@@ -1,4 +1,5 @@
 window.addEventListener("load", function() {
+    const placeholder = "smokesignal transceiving...");
     const fileUpload = document.getElementById("file-upload");
     const qrcodeElement = document.getElementById("qrcode");
     const qrcode = new QRCode(qrcodeElement, {
@@ -32,8 +33,16 @@ window.addEventListener("load", function() {
 
     /* display QR code and save in global `lastShown` */
     function showPacket(packet, updateHash=false) {
-        if (updateHash)
-            packet = packet.slice(0, hashable) + lastScanned.slice(hashable);
+        if (updateHash) {
+            let data = packet.slice(0, hashable),
+                oldhash = packet.slice(hashable),
+                newhash = lastScanned.slice(hashable);
+            console.debug("changing packet hash from " +
+                cleanup(oldhash) + " to " + cleanup(newhash)
+            );
+            packet = data + newhash;
+        }
+        console.debug("posting new QR code: " + cleanup(packet));
         qrcode.makeCode(packet);
         sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
@@ -199,16 +208,19 @@ window.addEventListener("load", function() {
         }
         const boxes = ["sent-text", "received-text", "upload", "qr-reader"]
         for (let i = 0; i < boxes.length; i++) {
-            let box = boxes[i] + "-container";
-            let from = source.getElementsByClassName(box)[0];
-            let to = destination.getElementsByClassName(box)[0];
+            let box = boxes[i] + "-container",
+                from = source.getElementsByClassName(box)[0],
+                to = destination.getElementsByClassName(box)[0];
             console.debug("moving " + box + " from " + from + " to " + to);
             to.append(...from.children);
         }
     }
     fileUpload.addEventListener("click", uploadFile);
-    window.onresize = setupPage;
+    // enable page reshuffling on resize and orientationchange
+    window.onresize = window.onorientationchange = setupPage;
+    // and set it up now, at load time
     setupPage();
-    showPacket(chunkToPacket("Smokesignal transceiving..."));
+    // show a placeholder barcode now
+    showPacket(chunkToPacket(placeholder));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
