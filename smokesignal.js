@@ -64,16 +64,45 @@ window.addEventListener("load", function() {
     /* scanner setup */
     const resultContainer = document.getElementById("received-text");
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader", {fps: 10, qrbox: 250});
-    html5QrcodeScanner.render(onScanSuccess);
+
+    /* jsQR video scanner setup */
+    const qrReaderDiv = document.getElementById("qr-reader");
+    const scanVideo = document.createElement("video");
+    const scanCanvas = document.createElement("canvas");
+    scanCanvas.style.width = "100%";
+    qrReaderDiv.appendChild(scanVideo);
+    qrReaderDiv.appendChild(scanCanvas);
+    const scanCtx = scanCanvas.getContext("2d");
+
+    navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
+        .then(function(stream) {
+            scanVideo.srcObject = stream;
+            scanVideo.setAttribute("playsinline", true);
+            scanVideo.play();
+            requestAnimationFrame(scanTick);
+        });
+
+    function scanTick() {
+        if (scanVideo.readyState === scanVideo.HAVE_ENOUGH_DATA) {
+            scanCanvas.height = scanVideo.videoHeight;
+            scanCanvas.width = scanVideo.videoWidth;
+            scanCtx.drawImage(scanVideo, 0, 0, scanCanvas.width, scanCanvas.height);
+            const imageData = scanCtx.getImageData(
+                0, 0, scanCanvas.width, scanCanvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+            if (code) {
+                const rawBytes = bufferToString(
+                    new Uint8Array(code.binaryData).buffer);
+                onScanSuccess(rawBytes);
+            }
+        }
+        requestAnimationFrame(scanTick);
+    }
 
     /* process successfully scanned QR code */
-    async function onScanSuccess(decodedText, decodedResult) {
-        console.debug("decodedResult: " +
-            printable(JSON.stringify(decodedResult))
-        );
-        const rawBytes = decodedResult.text;
+    async function onScanSuccess(rawBytes) {
         if (rawBytes !== lastScanned) {
             console.debug(
                 "decoded: " + printable(rawBytes) +
