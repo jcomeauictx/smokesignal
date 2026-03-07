@@ -56,14 +56,13 @@ window.addEventListener("load", function() {
     const resultContainer = document.getElementById("received-text");
     lastScanned = bufferToString(new ArrayBuffer(chunkSize));
 
+    /* process successfully scanned QR code */
     function onScanSuccess(decodedText, decodedResult) {
         if (decodedText !== lastScanned) {
-            console.debug("decodedText: " + decodedText +
-                        ", length: " + decodedText.length +
-                        ", decodedResult: " + decodedResult +
-                        ", lastScanned" + lastScanned.replace(
-                            /[^\x20-\x7E]+/g, '.'
-                        )
+            console.debug(
+                "decodedText: " + cleanup(decodedText) +
+                ", length: " + decodedText.length +
+                ", lastScanned: " + cleanup(lastScanned)
             );
             resultContainer.textContent = lastScanned = decodedText;
             let hash = decodedText.slice(hashable);
@@ -100,6 +99,11 @@ window.addEventListener("load", function() {
     const html5QrcodeScanner = new Html5QrcodeScanner(
         "qr-reader", {fps: 10, qrbox: 250});
     html5QrcodeScanner.render(onScanSuccess);
+
+    /* cleaned up binary string for console logging */
+    function cleanup(string) {
+        return string.replace(/[^\x20-\x7E]+/g, '.');
+    }
 
     /* ArrayBuffer to binary string */
     // https://stackoverflow.com/a/71516276/493161
