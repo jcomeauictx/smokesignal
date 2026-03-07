@@ -141,7 +141,7 @@ window.addEventListener("load", function() {
     function binaryStringToInteger(string) {
         let result = 0;
         for (let i = 0; i < string.length; i++) {
-            result = (result << 8) + string.charCodeAt(i);
+            result = (result * 0x100) + string.charCodeAt(i);
         }
         return result;
     }
