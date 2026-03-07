@@ -180,7 +180,7 @@ window.addEventListener("load", function() {
         xhr.onload = function(event) {
             console.log("POST to /save returned " + xhr.response);
         };
-        xhr.sendAsBinary(packet);
+        xhr.send(packet);
     }
 
     /* check layout, and move elements according to orientation */
