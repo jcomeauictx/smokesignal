@@ -87,6 +87,8 @@ window.addEventListener("load", function() {
             showPacket(lastShown, true);
             // save newly received packet
             savePacket(lastScanned);
+        } else {
+            console.info("scanned text same as last time");
         }
     }
 
@@ -162,7 +164,7 @@ window.addEventListener("load", function() {
     function savePacket(packet) {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/save", asynchronous);
-        xhr.onload = function(eventInstance) {
+        xhr.onload = function(event) {
             console.log("POST to /save returned " + xhr.response);
         };
         xhr.sendAsBinary(packet);
