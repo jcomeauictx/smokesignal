@@ -116,6 +116,8 @@ window.addEventListener("load", function() {
                 ", length: " + rawBytes.length +
                 ", lastScanned: " + printable(lastScanned)
             );
+            const seenData = rawBytes.slice(0, hashable);
+            const lastSeenData = lastScanned.slice(0, hashable);
             resultContainer.textContent = lastScanned = rawBytes;
             lastScannedHash = await arrayDataHash(stringToBuffer(
                 lastScanned.slice(0, hashable)
@@ -145,8 +147,6 @@ window.addEventListener("load", function() {
                 } else console.debug("acking placeholder QRcode on peer");
             }
             // now we check if the data itself (ignoring hash) changed
-            const seenData = rawBytes.slice(0, hashable);
-            const lastSeenData = lastScanned.slice(0, hashable);
             if (seenData != lastSeenData) {
                 // we need to calculate hash of PEER's new data and update
                 // OUR QRcode with it
