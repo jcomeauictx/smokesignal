@@ -19,7 +19,7 @@ import os, json, logging  # pylint: disable=multiple-imports
 import posixpath as wwwpath  # pylint: disable=multiple-imports
 from threading import Thread
 from select import select
-from smokesignal import newpath, SERIAL_BYTES, LENGTH_BYTES
+from smokesignal import newpath, SERIAL_BYTES, LENGTH_BYTES, CHUNKSIZE
 
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 logging.warning('wsgi script starting')
@@ -90,8 +90,11 @@ def api_save(environ, start_response):
             STATE['outfile'] = open(newpath(), 'wb')
             response['opened'] = True
         if length:
-            STATE['outfile'].write(chunk)
-            response['written'] = True
+            if length <= CHUNKSIZE:
+                STATE['outfile'].write(chunk)
+                response['written'] = True
+            else:
+                logging.error('bad chunk length %d', length)
         else:
             STATE['outfile'].close()
             STATE['outfile'] = None
