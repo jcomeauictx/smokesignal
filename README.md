@@ -11,6 +11,12 @@ with more than one computer serving as routers.
 Scaling wider, telescopes and large screens could potentially enable
 point-to-point links many kilometers distant, linking community meshes.
 
+## quickstart
+
+install on a digitalocean droplet
+
+1. create a droplet in your nearest data center: Debian 13, Basic, Regular, $4/month in March 2026, which gets you 512MB RAM, 10GB SSD, and 500GB transfer. add the IP to your /etc/hosts as: `echo 10.23.221.67 droplet | sudo tee -a /etc/hosts`. or advanced users can add to $HOME/.ssh/config without sudo access. make sure to enable, or add, your ssh key(s) to the droplet on creation.
+
 ## developer's notes
 * once prototype is working, move to javascript frontend and keep python
   running under uwsgi on backend. then it can run on iPhone with iSH.
