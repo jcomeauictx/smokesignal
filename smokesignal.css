@@ -84,7 +84,7 @@
             display: none !important;
         }
         .show-on-mobile {
-            display: block;
+            display: flex;
         }
         html, body {
             height: 100%;
