@@ -68,8 +68,9 @@ window.addEventListener("load", function() {
     /* jsQR video scanner setup */
     const qrReaderDiv = document.getElementById("qr-reader");
     const scanVideo = document.createElement("video");
+    scanVideo.style.width = "100%";
     const scanCanvas = document.createElement("canvas");
-    scanCanvas.style.width = "100%";
+    scanCanvas.style.display = "none";
     qrReaderDiv.appendChild(scanVideo);
     qrReaderDiv.appendChild(scanCanvas);
     const scanCtx = scanCanvas.getContext("2d");
@@ -236,7 +237,7 @@ window.addEventListener("load", function() {
             console.debug("POST to /save returned " + xhr.response);
         };
         console.debug("POSTing: " + printable(packet));
-        xhr.send(packet);
+        xhr.send(stringToBuffer(packet));
     }
 
     /* check layout, and move elements according to orientation */
