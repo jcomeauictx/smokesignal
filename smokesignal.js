@@ -11,38 +11,30 @@ window.addEventListener("load", function() {
     const asynchronous = true, synchronous = false;
     // ideally pull the following constants from smokesignal/wsgi
     const chunkSize = 128;
-    const intSize = 4;
     const serialSize = 4;
+    const intSize = 4;
+    const dataOffset = serialSize + intSize;
     const hashable = serialSize + intSize + chunkSize;
     const hashSize = 32;  // SHA-256 always produces 32 bytes
     // set some state variables
     let lastScanned = null;
+    let lastScannedHash = null;
     let lastShown = null;
     let dataBeingSent = null;
     let currentDataSerial = 0;
 
     /* convert a raw file chunk into a valid data packet */
-    function chunkToPacket(chunk, serial) {
+    function chunkToPacket(chunk, serial=0) {
         const padding = bufferToString(
             new Uint8Array(chunkSize - chunk.length));
         const packedSerial = integerToBinaryString(serial, serialSize);
         const packedSize = integerToBinaryString(chunk.length, intSize);
-        const hashDigest = lastScanned.slice(hashable);
-        return packedSerial + packedSize + chunk + padding + hashDigest;
+        return packedSerial + packedSize + chunk + padding + lastScannedHash;
     }
 
     /* display QR code and save in global `lastShown` */
-    function showPacket(packet, updateHash=false) {
-        if (updateHash) {
-            let data = packet.slice(0, hashable),
-                oldhash = packet.slice(hashable),
-                newhash = lastScanned.slice(hashable);
-            console.debug("changing packet hash from '" +
-                printable(oldhash) + "' to '" + printable(newhash) + "'"
-            );
-            packet = data + newhash;
-        }
-        console.debug("displaying new QR code: " + printable(packet));
+    function showPacket(packet=lastShown) {
+        console.debug("displaying QR code: " + printable(packet));
         qrcode.makeCode(packet);
         sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
@@ -64,6 +56,7 @@ window.addEventListener("load", function() {
     /* scanner setup */
     const resultContainer = document.getElementById("received-text");
     lastScanned = bufferToString(new Uint8Array(hashable + hashSize));
+    lastScannedHash = lastScanned.slice(hashable);
 
     /* jsQR video scanner setup */
     const qrReaderDiv = document.getElementById("qr-reader");
@@ -103,16 +96,34 @@ window.addEventListener("load", function() {
     }
 
     /* process successfully scanned QR code */
+    /* the hash part is confusing, at least to me, so let's explain it
+     * here for future maintenance: WE/OUR is this computer,
+     * PEER/PEER'S/ITS refers to our peer.
+     * the rawBytes contain, at the end, the hash for what PEER
+     * saw last of OUR QR codes. We meed to check if that matches what
+     * WE last sent, so we know PEER received our code correctly,
+     * and, if a file transfer is in progress, send a new chunk.
+     * at the same time, we need to hash the first parts
+     * (serial + length + chunk) of PEER'S data in rawBytes and update
+     * the tail end of OUR own QR code to let PEER know we saw ITS
+     * last code; but that's only necessary if that part changed from
+     * last scan.
+     */
     async function onScanSuccess(rawBytes) {
-        if (rawBytes !== lastScanned) {
+        if (rawBytes != lastScanned) {
             console.debug(
-                "decoded: " + printable(rawBytes) +
+                "new scan data, decoded: " + printable(rawBytes) +
                 ", length: " + rawBytes.length +
                 ", lastScanned: " + printable(lastScanned)
             );
             resultContainer.textContent = lastScanned = rawBytes;
+            lastScannedHash = await arrayDataHash(stringToBuffer(
+                lastScanned.slice(0, hashable)
+            ));
+            // hash of OUR data according to PEER
             let hash = rawBytes.slice(hashable);
             console.debug("getting hash of scanned packet");
+            // hash of OUR data according to OUR own QR code
             let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
             );
@@ -129,15 +140,26 @@ window.addEventListener("load", function() {
                         console.debug("file upload complete");
                         dataBeingSent = null;
                         currentDataSerial = 0;
+                    // show QR code of next chunk in outgoing file
                     } else lastShown = chunkToPacket(chunk, serial);
                 } else console.debug("acking placeholder QR code on peer");
+            }
+            // now we check if the data itself (ignoring hash) changed
+            const seenData = rawBytes.slice(0, hashable);
+            const lastSeenData = lastScanned.slice(0, hashable);
+            if (seenData != lastSeenData) {
+                // we need to calculate hash of PEER'S new data and update
+                // OUR QR code with it
+                lastShown = lastShown.slice(0, hashable) +
+                    await(arrayDataHash(stringToBuffer(seenData)));
             }
             // redisplay current outgoing QR code with updated hash
             // it's what lets peer know we saw its last code, AND
             // if lastShown was updated above, it sends new packet to peer
-            showPacket(lastShown, true);
+            showPacket();
             // save newly received packet
-            savePacket(lastScanned);
+            if (seenData.slice(dataOffset) != placeholder)
+                savePacket(lastScanned);
         } else {
             console.info("scanned text same as last time");
         }
@@ -223,7 +245,7 @@ window.addEventListener("load", function() {
             dataBeingSent = bufferToString(reader.result);
             currentDataSerial = 0;
             // show first packet; the rest will be event-driven
-            showPacket(chunkToPacket(dataBeingSent.slice(0, chunkSize), 0));
+            showPacket(chunkToPacket(dataBeingSent.slice(0, chunkSize)));
         };
         reader.readAsArrayBuffer(file);
     }
