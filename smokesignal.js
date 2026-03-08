@@ -153,7 +153,8 @@ window.addEventListener("load", function() {
                 lastShown = lastShown.slice(0, hashable) +
                     await(arrayDataHash(stringToBuffer(seenData)));
                 console.debug(
-                    "updated lastShown with new hash of PEER's data"
+                    "updated lastShown with new hash of PEER's data: " +
+                    printable(lastShown)
                 );
             } else {
                 console.debug(
@@ -231,11 +232,11 @@ window.addEventListener("load", function() {
     };
 
     /* integer to big-endian binary string */
-    function integerToBinaryString(integer, length=4) {
+    function integerToBinaryString(integer, length=intSize) {
         let result = "";
         for (let i = 0; i < length; i++) {
             result = String.fromCharCode(integer % 256) + result;
-            integer >>= 8;
+            integer /= 256;
         }
         return result;
     }
