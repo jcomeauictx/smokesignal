@@ -87,7 +87,7 @@ def api_save(environ, start_response):
         chunk = payload[offset:offset + length]
         if serial == 0 and length:
             # pylint: disable=consider-using-with
-            STATE['outfile'] = newpath
+            STATE['outfile'] = newpath()
         if length:
             if length <= CHUNKSIZE:
                 with open(STATE['outfile'], 'ab') as outfile:

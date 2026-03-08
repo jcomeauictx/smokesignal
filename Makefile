@@ -41,6 +41,8 @@ uwsgi: wsgi.py
 	$@ --http :8080 --wsgi-file $< --callable application
 edit:
 	vi wsgi.py smokesignal.{html,js,css}
+view:
+	xdg-open http://127.0.0.1:8080/
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@

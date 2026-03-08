@@ -47,7 +47,7 @@ window.addEventListener("load", function() {
         const size = binaryStringToInteger(
             packet.slice(offset, offset + intSize));
         offset += intSize;
-        const chunk = packet.slice(offset, offset + chunkSize);
+        const chunk = packet.slice(offset, offset + size);
         offset += chunkSize;
         const hash = packet.slice(offset, offset + hashSize);
         return {"serial": serial, "size": size, "chunk": chunk, "hash": hash};
@@ -319,5 +319,14 @@ window.addEventListener("load", function() {
     console.debug("printable(" + testString + "): " + printable(testString));
     testString = '{\n  "api": "blather",\n  "qrs": "tuv": {\n    "xyz": null}}'
     console.debug("cleanup(" + testString + "): " + cleanup(testString));
+    testString =
+        integerToBinaryString(0)  // serial number
+        + integerToBinaryString(placeholder.length)  // length
+        + placeholder.padEnd(chunkSize, "\0")  // data
+        + "".padEnd(hashSize, "\xab");  // hash
+    console.debug("test packet string: " + printable(testString));
+    console.debug("test packet object: " + JSON.stringify(
+        packetToData(testString)
+    ));
 });
 // vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
