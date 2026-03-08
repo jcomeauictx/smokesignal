@@ -110,7 +110,7 @@ window.addEventListener("load", function() {
      * last scan.
      */
     async function onScanSuccess(rawBytes) {
-        if (rawBytes != lastScanned) {
+        if (rawBytes && rawBytes != lastScanned) {
             console.debug(
                 "new scan data, decoded: " + printable(rawBytes) +
                 ", length: " + rawBytes.length +
@@ -160,8 +160,10 @@ window.addEventListener("load", function() {
             // save newly received packet
             if (seenData.slice(dataOffset) != placeholder)
                 savePacket(lastScanned);
-        } else {
+        } else if (rawBytes) {
             console.info("scanned text same as last time");
+        } else {
+            console.info("no data was returned from scanner");
         }
     }
 
