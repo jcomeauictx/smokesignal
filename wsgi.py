@@ -78,10 +78,10 @@ def api_save(environ, start_response):
         content_type = environ.get('CONTENT_TYPE', '')
         logging.debug('content-type: %s, raw save data: %r',
                       content_type, payload)
-        serial = int.from_bytes(payload[offset:SERIAL_BYTES])
+        serial = int.from_bytes(payload[offset:SERIAL_BYTES], 'big')
         response['serial'] = serial
         offset += SERIAL_BYTES
-        length = int.from_bytes(payload[offset:offset + LENGTH_BYTES])
+        length = int.from_bytes(payload[offset:offset + LENGTH_BYTES], 'big')
         response['length'] = length
         offset += LENGTH_BYTES
         chunk = payload[offset:offset + length]
@@ -93,6 +93,7 @@ def api_save(environ, start_response):
                 with open(STATE['outfile'], 'ab') as outfile:
                     if outfile.tell() == serial * CHUNKSIZE:
                         outfile.write(chunk)
+                        outfile.flush()
                         response['written'] = True
                     else:
                         logging.error(

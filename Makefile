@@ -15,6 +15,7 @@ DELETE ?= --delete
 ifneq ($(SHOWENV),)
 export
 endif
+default: wsgi
 transceive: smokesignal.py
 	./$< $@
 transmit: smokesignal.py /bin/bash
