@@ -158,7 +158,7 @@ window.addEventListener("load", function() {
                     await(arrayDataHash(stringToBuffer(seenData)));
                 console.debug(
                     "updated lastShown with new hash of PEER's data: '" +
-                    printable(lastShown) + "', length: " + lastShown.length;
+                    printable(lastShown) + "', length: " + lastShown.length
                 );
             } else {
                 console.debug(
