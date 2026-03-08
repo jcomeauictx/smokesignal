@@ -1,4 +1,6 @@
 SHELL := /bin/bash
+PYTHON ?= $(word 1, $(shell which python3 python false 2>/dev/null))
+PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-pyzbar python3-zbar
 PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
@@ -22,7 +24,7 @@ transmit: smokesignal.py /bin/bash
 	./$< $@ $(word 2, $+)
 receive: smokesignal.py
 	./$< $@
-requirements:
+dependencies:
 	sudo $(PKGMGR) $(INSTALL) $(REQUIRED)
 %.pylint: %.py
 	pylint $<
