@@ -179,7 +179,7 @@ window.addEventListener("load", function() {
         for (let i = 0; i < string.length; i++) {
             bytes[i] = string.charCodeAt(i);
         }
-        return buffer;
+        return bytes;
     }
 
     /* binary string (big-endian) to integer */
