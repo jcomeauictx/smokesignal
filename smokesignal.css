@@ -1,12 +1,15 @@
 <style>
+    * {
+        box-sizing: border-box;
+    }
     body {
         font-family: sans-serif;
     }
     html, body {
-        box-sizing: border-box;
-	margin: .5vmin;
-	padding: 0;
-	height: 100%;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
     }
     .hide-on-mobile {
         display: block;
@@ -23,11 +26,58 @@
     }
     .horizontal-layout {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
     }
     .horizontal {
-        flex-grow: 1;  /* any positive number here will work */
+        flex-grow: 1;
     }
+    /* === Desktop layout === */
+    .qr-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        width: 100%;
+        height: 100vh;
+        padding: 4px;
+    }
+    .qr-left, .qr-right {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 4px;
+        overflow: hidden;
+    }
+    #qrcode {
+        flex-shrink: 0;
+        width: 98vmin;
+        height: 98vmin;
+    }
+    #qr-reader {
+        width: 100%;
+        max-width: 100%;
+    }
+    #qr-reader canvas {
+        width: 100%;
+        height: auto;
+    }
+    #received-text, #sent-text {
+        margin: 4px 0;
+        padding: 4px;
+        background: #eee;
+        word-break: break-all;
+        font-family: monospace;
+        font-size: 0.7em;
+        max-height: 20vh;
+        overflow-y: auto;
+    }
+    button {
+        margin: 4px;
+        padding: 6px 12px;
+    }
+    #file-input {
+        margin: 4px;
+        max-width: 100%;
+    }
+    /* === Mobile layout === */
     @media screen and (max-width: 600px) {
         .hide-on-mobile {
             display: none !important;
@@ -35,38 +85,31 @@
         .show-on-mobile {
             display: block;
         }
-    }
-    .qr-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-    .qr-left, .qr-right {
-        flex-grow: 1;  /* any positive number here will work */
-        margin: 10px;
-    }
-    #qr-reader {
-        width: 100%;
-        max-width: 100%;
-    }
-    #qrcode {
-        width: 98vmin;
-        height: 98vmin;
-    }
-    #received-text, #sent-text {
-        margin: 10px;
-        padding: 5px;
-        background: #eee;
-        word-break: break-all;
-        font-family: monospace;
-        font-size: 0.8em;
-    }
-    button {
-        margin: 5px;
-        padding: 8px 16px;
-    }
-    #file-input {
-        margin: 10px;
+        .qr-container {
+            height: auto;
+            padding: 2px;
+        }
+        #qrcode {
+            width: 98vmin;
+            height: 98vmin;
+            margin: 0 auto;
+        }
+        #phone-lower {
+            padding: 2px;
+        }
+        #phone-lower .qr-reader-container {
+            max-height: 40vh;
+            overflow: hidden;
+        }
+        #qr-reader canvas {
+            max-height: 38vh;
+            width: auto;
+            object-fit: contain;
+        }
+        #received-text, #sent-text {
+            max-height: 10vh;
+            font-size: 0.6em;
+        }
     }
 </style>
 /* vim: tabstop=8 shiftwidth=4 expandtab softtabstop=4
