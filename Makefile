@@ -1,6 +1,8 @@
 SHELL := /bin/bash
+GITPREFIX ?= $(dir $(shell git remote get-url origin))
 PYTHON ?= $(word 1, $(shell which python3 python false 2>/dev/null))
 PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
+JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-pyzbar python3-zbar
 PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
@@ -26,6 +28,13 @@ receive: smokesignal.py
 	./$< $@
 dependencies:
 	sudo $(PKGMGR) $(INSTALL) $(REQUIRED)
+	cd .. && for requirement in $(JSREQUIRED); do \
+	 if [ -d $$requirement ]; then \
+	  (cd $$requirement && git pull); \
+	 else \
+	  git clone $(GITPREFIX)$$requirement; \
+	 fi; \
+	done
 %.pylint: %.py
 	pylint $<
 %.doctest: %.py
