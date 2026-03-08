@@ -32,9 +32,9 @@ window.addEventListener("load", function() {
         return packedSerial + packedSize + chunk + padding + lastScannedHash;
     }
 
-    /* display QR code and save in global `lastShown` */
+    /* display QRcode and save in global `lastShown` */
     function showPacket(packet=lastShown) {
-        console.debug("displaying QR code: " + printable(packet));
+        console.debug("displaying QRcode: " + printable(packet));
         qrcode.makeCode(packet);
         sentText = document.getElementById("sent-text");
         sentText.textContent = lastShown = packet;
@@ -95,17 +95,17 @@ window.addEventListener("load", function() {
         requestAnimationFrame(scanTick);
     }
 
-    /* process successfully scanned QR code */
+    /* process successfully scanned QRcode */
     /* the hash part is confusing, at least to me, so let's explain it
      * here for future maintenance: WE/OUR is this computer,
-     * PEER/PEER'S/ITS refers to our peer.
+     * PEER/PEER's/ITS refers to our peer.
      * the rawBytes contain, at the end, the hash for what PEER
-     * saw last of OUR QR codes. We meed to check if that matches what
+     * saw last of OUR QRcodes. We meed to check if that matches what
      * WE last sent, so we know PEER received our code correctly,
      * and, if a file transfer is in progress, send a new chunk.
      * at the same time, we need to hash the first parts
-     * (serial + length + chunk) of PEER'S data in rawBytes and update
-     * the tail end of OUR own QR code to let PEER know we saw ITS
+     * (serial + length + chunk) of PEER's data in rawBytes and update
+     * the tail end of OUR own QRcode to let PEER know we saw ITS
      * last code; but that's only necessary if that part changed from
      * last scan.
      */
@@ -123,15 +123,15 @@ window.addEventListener("load", function() {
             // hash of OUR data according to PEER
             let hash = rawBytes.slice(hashable);
             console.debug("getting hash of scanned packet");
-            // hash of OUR data according to OUR own QR code
+            // hash of OUR data according to OUR own QRcode
             let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
             );
             console.debug("comparing scanned hash '" + printable(hash) +
-                "' to hash of our QR code '" + printable(hashed) + "'");
+                "' to hash of our QRcode '" + printable(hashed) + "'");
             let data = dataBeingSent;
             if (hash == hashed) {
-                console.log("peer saw our current QR code");
+                console.log("peer saw our current QRcode");
                 if (data != null) {
                     let serial = ++currentDataSerial;
                     let offset = serial * chunkSize;
@@ -140,22 +140,30 @@ window.addEventListener("load", function() {
                         console.debug("file upload complete");
                         dataBeingSent = null;
                         currentDataSerial = 0;
-                    // show QR code of next chunk in outgoing file
+                    // show QRcode of next chunk in outgoing file
                     } else lastShown = chunkToPacket(chunk, serial);
-                } else console.debug("acking placeholder QR code on peer");
+                } else console.debug("acking placeholder QRcode on peer");
             }
             // now we check if the data itself (ignoring hash) changed
             const seenData = rawBytes.slice(0, hashable);
             const lastSeenData = lastScanned.slice(0, hashable);
             if (seenData != lastSeenData) {
-                // we need to calculate hash of PEER'S new data and update
-                // OUR QR code with it
+                // we need to calculate hash of PEER's new data and update
+                // OUR QRcode with it
                 lastShown = lastShown.slice(0, hashable) +
                     await(arrayDataHash(stringToBuffer(seenData)));
+                console.debug(
+                    "updated lastShown with new hash of PEER's data"
+                );
+            } else {
+                console.debug(
+                    "PEER's data didn't change, OUR QRcode not updated"
+                );
             }
-            // redisplay current outgoing QR code with updated hash
+            // redisplay current outgoing QRcode with updated hash
             // it's what lets peer know we saw its last code, AND
             // if lastShown was updated above, it sends new packet to peer
+            console.debug("showing packet from onScanSuccess()");
             showPacket();
             // save newly received packet
             if (seenData.slice(dataOffset) != placeholder)
@@ -247,6 +255,7 @@ window.addEventListener("load", function() {
             dataBeingSent = bufferToString(reader.result);
             currentDataSerial = 0;
             // show first packet; the rest will be event-driven
+            console.debug("showing packet from uploadFile()");
             showPacket(chunkToPacket(dataBeingSent.slice(0, chunkSize)));
         };
         reader.readAsArrayBuffer(file);
@@ -293,6 +302,7 @@ window.addEventListener("load", function() {
     // and set it up now, at load time
     setupPage();
     // show a placeholder barcode now
+    console.debug("showing packet from setupPage()");
     showPacket(chunkToPacket(placeholder));
     // run some tests on subroutines in lieu of doctests
     console.debug("packed integer 0: " + integerToBinaryString(0));
