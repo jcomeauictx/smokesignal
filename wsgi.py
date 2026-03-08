@@ -87,16 +87,21 @@ def api_save(environ, start_response):
         chunk = payload[offset:offset + length]
         if serial == 0 and length:
             # pylint: disable=consider-using-with
-            STATE['outfile'] = open(newpath(), 'wb')
-            response['opened'] = True
+            STATE['outfile'] = newpath
         if length:
             if length <= CHUNKSIZE:
-                STATE['outfile'].write(chunk)
-                response['written'] = True
+                with open(STATE['outfile'], 'ab') as outfile:
+                    if outfile.tell() == serial * CHUNKSIZE:
+                        outfile.write(chunk)
+                        response['written'] = True
+                    else:
+                        logging.error(
+                            'file position %d incompatible with serial #%d',
+                            outfile.tell(), serial
+                        )
             else:
                 logging.error('bad chunk length %d', length)
         else:
-            STATE['outfile'].close()
             STATE['outfile'] = None
             response['complete'] = True
         status = '200 success'

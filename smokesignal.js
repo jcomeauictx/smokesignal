@@ -144,7 +144,7 @@ window.addEventListener("load", function() {
                         currentDataSerial = 0;
                     // show QRcode of next chunk in outgoing file
                     } else lastShown = chunkToPacket(chunk, serial);
-                } else console.debug("acking placeholder QRcode on peer");
+                }
             }
             // now we check if the data itself (ignoring hash) changed
             if (seenData != lastSeenData) {
@@ -166,9 +166,12 @@ window.addEventListener("load", function() {
             // if lastShown was updated above, it sends new packet to peer
             console.debug("showing packet from onScanSuccess()");
             showPacket();
-            // save newly received packet
-            if (packetToData(lastScanned).chunk != placeholder)
-                savePacket(lastScanned);
+            // save newly received packet; NOTE repurposing `data` here
+            data = packetToData(lastScanned).chunk;
+            console.debug("comparing packet data " + printable(data) +
+                          " to placeholder " + printable(placeholder)
+            );
+            if (data != placeholder) savePacket(lastScanned);
         } else if (rawBytes) {
             console.info("scanned text same as last time");
         } else {
