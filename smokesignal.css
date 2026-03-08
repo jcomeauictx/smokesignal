@@ -26,10 +26,12 @@
     }
     .horizontal-layout {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
     }
     .horizontal {
-        flex-grow: 1;
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
     }
     /* === Desktop layout === */
     .qr-container {
@@ -85,7 +87,16 @@
         .show-on-mobile {
             display: block;
         }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
         .qr-container {
+            flex-shrink: 0;
             height: auto;
             padding: 2px;
         }
@@ -95,19 +106,19 @@
             margin: 0 auto;
         }
         #phone-lower {
+            flex: 1 1 0;
+            min-height: 0;
             padding: 2px;
-        }
-        #phone-lower .qr-reader-container {
-            max-height: 40vh;
             overflow: hidden;
         }
+        #phone-lower .horizontal {
+            overflow: auto;
+        }
         #qr-reader canvas {
-            max-height: 38vh;
-            width: auto;
-            object-fit: contain;
+            width: 100%;
+            height: auto;
         }
         #received-text, #sent-text {
-            max-height: 10vh;
             font-size: 0.6em;
         }
     }
