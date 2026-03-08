@@ -37,8 +37,8 @@ window.addEventListener("load", function() {
             let data = packet.slice(0, hashable),
                 oldhash = packet.slice(hashable),
                 newhash = lastScanned.slice(hashable);
-            console.debug("changing packet hash from " +
-                printable(oldhash) + " to " + printable(newhash)
+            console.debug("changing packet hash from '" +
+                printable(oldhash) + "' to '" + printable(newhash) + "'"
             );
             packet = data + newhash;
         }
@@ -116,7 +116,8 @@ window.addEventListener("load", function() {
             let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
             );
-            console.debug("comparing packet hash to hash of our QR code");
+            console.debug("comparing packet hash '" + printable(hashed) +
+                "' to hash of our QR code '" + printable(hash) + "'");
             let data = dataBeingSent;
             if (hash == hashed) {
                 console.log("peer saw our current QR code");
