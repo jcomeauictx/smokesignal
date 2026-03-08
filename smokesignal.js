@@ -66,20 +66,47 @@ window.addEventListener("load", function() {
     /* jsQR video scanner setup */
     const qrReaderDiv = document.getElementById("qr-reader");
     const scanVideo = document.createElement("video");
-    scanVideo.style.width = "100%";
+    scanVideo.style.display = "none";
     const scanCanvas = document.createElement("canvas");
-    scanCanvas.style.display = "none";
-    qrReaderDiv.appendChild(scanVideo);
+    scanCanvas.style.width = "100%";
+    const cameraToggle = document.createElement("button");
+    cameraToggle.textContent = "⟲ Camera";
+    cameraToggle.style.cssText = "margin:4px 0;font-size:0.8em;";
+    qrReaderDiv.appendChild(cameraToggle);
     qrReaderDiv.appendChild(scanCanvas);
+    qrReaderDiv.appendChild(scanVideo);
     const scanCtx = scanCanvas.getContext("2d");
+    let currentFacingMode = "environment";
 
-    navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
-        .then(function(stream) {
-            scanVideo.srcObject = stream;
-            scanVideo.setAttribute("playsinline", true);
-            scanVideo.play();
-            requestAnimationFrame(scanTick);
-        });
+    function startCamera(facingMode) {
+        // stop any existing stream
+        if (scanVideo.srcObject) {
+            scanVideo.srcObject.getTracks().forEach(function(t) { t.stop(); });
+        }
+        currentFacingMode = facingMode;
+        navigator.mediaDevices.getUserMedia({video: {facingMode: facingMode}})
+            .then(function(stream) {
+                scanVideo.srcObject = stream;
+                scanVideo.setAttribute("playsinline", true);
+                scanVideo.play();
+                requestAnimationFrame(scanTick);
+            });
+    }
+
+    cameraToggle.addEventListener("click", function() {
+        startCamera(currentFacingMode === "environment" ? "user" : "environment");
+    });
+
+    startCamera("environment");
+
+    function drawLine(begin, end, color) {
+        scanCtx.beginPath();
+        scanCtx.moveTo(begin.x, begin.y);
+        scanCtx.lineTo(end.x, end.y);
+        scanCtx.lineWidth = 4;
+        scanCtx.strokeStyle = color;
+        scanCtx.stroke();
+    }
 
     function scanTick() {
         if (scanVideo.readyState === scanVideo.HAVE_ENOUGH_DATA) {
@@ -92,6 +119,10 @@ window.addEventListener("load", function() {
                 inversionAttempts: "dontInvert",
             });
             if (code) {
+                drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+                drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+                drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+                drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
                 const rawBytes = bufferToString(
                     new Uint8Array(code.binaryData).buffer);
                 onScanSuccess(rawBytes);
