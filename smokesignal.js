@@ -24,7 +24,7 @@ window.addEventListener("load", function() {
     /* convert a raw file chunk into a valid data packet */
     function chunkToPacket(chunk, serial) {
         const padding = bufferToString(
-            new ArrayBuffer(chunkSize - chunk.length));
+            new Uint8Array(chunkSize - chunk.length));
         const packedSerial = integerToBinaryString(serial, serialSize);
         const packedSize = integerToBinaryString(chunk.length, intSize);
         const hashDigest = lastScanned.slice(hashable);
@@ -63,7 +63,7 @@ window.addEventListener("load", function() {
 
     /* scanner setup */
     const resultContainer = document.getElementById("received-text");
-    lastScanned = bufferToString(new ArrayBuffer(hashable + hashSize));
+    lastScanned = bufferToString(new Uint8Array(hashable + hashSize));
 
     /* jsQR video scanner setup */
     const qrReaderDiv = document.getElementById("qr-reader");
@@ -116,8 +116,8 @@ window.addEventListener("load", function() {
             let hashed = await arrayDataHash(stringToBuffer(
                 lastShown.slice(0, hashable))
             );
-            console.debug("comparing packet hash '" + printable(hashed) +
-                "' to hash of our QR code '" + printable(hash) + "'");
+            console.debug("comparing scanned hash '" + printable(hash) +
+                "' to hash of our QR code '" + printable(hashed) + "'");
             let data = dataBeingSent;
             if (hash == hashed) {
                 console.log("peer saw our current QR code");
@@ -175,8 +175,7 @@ window.addEventListener("load", function() {
     /* binary string to ArrayBuffer */
 
     function stringToBuffer(string) {
-        const buffer = new ArrayBuffer(string.length);
-        const bytes = new Uint8Array(buffer);
+        const bytes = new Uint8Array(string.length);
         for (let i = 0; i < string.length; i++) {
             bytes[i] = string.charCodeAt(i);
         }
