@@ -50,7 +50,7 @@ window.addEventListener("load", function() {
         const chunk = packet.slice(offset, offset + chunkSize);
         offset += chunkSize;
         const hash = packet.slice(offset, offset + hashSize);
-        return [serial, size, chunk, hash];
+        return {"serial": serial, "size": size, "chunk": chunk, "hash": hash};
     }
 
     /* scanner setup */
@@ -166,7 +166,7 @@ window.addEventListener("load", function() {
             console.debug("showing packet from onScanSuccess()");
             showPacket();
             // save newly received packet
-            if (seenData.slice(dataOffset) != placeholder)
+            if packetToData(lastScanned).chunk != placeholder)
                 savePacket(lastScanned);
         } else if (rawBytes) {
             console.info("scanned text same as last time");
