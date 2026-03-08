@@ -63,7 +63,7 @@ window.addEventListener("load", function() {
 
     /* scanner setup */
     const resultContainer = document.getElementById("received-text");
-    lastScanned = bufferToString(new ArrayBuffer(chunkSize));
+    lastScanned = bufferToString(new ArrayBuffer(hashable + hashSize));
 
     /* jsQR video scanner setup */
     const qrReaderDiv = document.getElementById("qr-reader");
@@ -108,7 +108,7 @@ window.addEventListener("load", function() {
             console.debug(
                 "decoded: " + printable(rawBytes) +
                 ", length: " + rawBytes.length +
-                ", lastScanned: " + cleanup(lastScanned)
+                ", lastScanned: " + printable(lastScanned)
             );
             resultContainer.textContent = lastScanned = rawBytes;
             let hash = rawBytes.slice(hashable);
