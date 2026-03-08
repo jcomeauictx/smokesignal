@@ -166,7 +166,7 @@ window.addEventListener("load", function() {
             console.debug("showing packet from onScanSuccess()");
             showPacket();
             // save newly received packet
-            if packetToData(lastScanned).chunk != placeholder)
+            if (packetToData(lastScanned).chunk != placeholder)
                 savePacket(lastScanned);
         } else if (rawBytes) {
             console.info("scanned text same as last time");
