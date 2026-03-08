@@ -76,7 +76,7 @@ window.addEventListener("load", function() {
     qrReaderDiv.appendChild(scanCanvas);
     qrReaderDiv.appendChild(scanVideo);
     const scanCtx = scanCanvas.getContext("2d");
-    let currentFacingMode = "environment";
+    let currentFacingMode = "user";
 
     function startCamera(facingMode) {
         // stop any existing stream
@@ -97,7 +97,7 @@ window.addEventListener("load", function() {
         startCamera(currentFacingMode === "environment" ? "user" : "environment");
     });
 
-    startCamera("environment");
+    startCamera("user");
 
     function drawLine(begin, end, color) {
         scanCtx.beginPath();
