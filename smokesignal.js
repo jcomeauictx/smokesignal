@@ -46,6 +46,10 @@ window.addEventListener("load", function() {
         const serial = binaryStringToInteger(packet.slice(0, offset));
         const size = binaryStringToInteger(
             packet.slice(offset, offset + intSize));
+        if (size > chunkSize || size < 0) {
+            console.error("bad chunk size " + size);
+            size = chunkSize;
+        }
         offset += intSize;
         const chunk = packet.slice(offset, offset + size);
         offset += chunkSize;
@@ -153,8 +157,8 @@ window.addEventListener("load", function() {
                 lastShown = lastShown.slice(0, hashable) +
                     await(arrayDataHash(stringToBuffer(seenData)));
                 console.debug(
-                    "updated lastShown with new hash of PEER's data: " +
-                    printable(lastShown)
+                    "updated lastShown with new hash of PEER's data: '" +
+                    printable(lastShown) + "', length: " + lastShown.length;
                 );
             } else {
                 console.debug(
@@ -168,8 +172,8 @@ window.addEventListener("load", function() {
             showPacket();
             // save newly received packet; NOTE repurposing `data` here
             data = packetToData(lastScanned).chunk;
-            console.debug("comparing packet data " + printable(data) +
-                          " to placeholder " + printable(placeholder)
+            console.debug("comparing packet data '" + printable(data) +
+                          "' to placeholder '" + printable(placeholder) + "'"
             );
             if (data != placeholder) savePacket(lastScanned);
         } else if (rawBytes) {
