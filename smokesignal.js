@@ -2,6 +2,7 @@ window.addEventListener("load", function() {
     const placeholder = "smokesignal transceiving...";
     const fileUpload = document.getElementById("file-upload");
     const qrcodeElement = document.getElementById("qrcode");
+    QRCode.binaryMode = true;
     const qrcode = new QRCode(qrcodeElement, {
         width: qrcodeElement.offsetWidth,
         height: qrcodeElement.offsetHeight,
