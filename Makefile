@@ -111,7 +111,7 @@ droplet:
 	 make dependencies'
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 wget -O- http://127.0.0.1:8080/README.md > /dev/null 2>&1 \
-	 || nohup make wsgi > /dev/null 2>&1 &'
+	 || (nohup make wsgi < /dev/null > /dev/null 2>&1 &)'
 	ssh -Y $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 make view'
 env:
