@@ -28,7 +28,6 @@ transmit: smokesignal.py /bin/bash
 receive: smokesignal.py
 	./$< $@
 dependencies:
-	sudo $(PKGMGR) $(INSTALL) $(REQUIRED)
 	cd .. && for requirement in $(JSREQUIRED); do \
 	 if [ -d $$requirement ]; then \
 	  (cd $$requirement && git pull); \
@@ -36,6 +35,8 @@ dependencies:
 	  git clone $(GITPREFIX)$$requirement; \
 	 fi; \
 	done
+dependencies.root:
+	$(PKGMGR) $(INSTALL) $(REQUIRED)
 %.pylint: %.py
 	pylint $<
 %.doctest: %.py
@@ -76,14 +77,16 @@ droplet:
 	 -f .ssh/id_rsa -N ""'
 	ssh $(USER)@droplet 'grep -q "^github.com " .ssh/known_hosts || \
 	 ssh-keyscan github.com >> .ssh/known_hosts'
-	ssh $(USER)@droplet 'if [ ! -d src/jcomeauictx/$(REPO) ]; then \
-	 cd src/jcomeauictx && git clone $(GITPREFIX)$(REPO) || \
+	ssh $(USER)@droplet 'if [ -d src/jcomeauictx/$(REPO) ]; then \
+	 (cd src/jcomeauictx/$(REPO) && git pull); else \
+	 (cd src/jcomeauictx && git clone $(GITPREFIX)$(REPO)) || \
 	 (echo "you may need to add your droplet key to your git repo" >&2; \
 	 cat ~/.ssh/id_rsa.pub; \
 	 false); \
 	 fi'
 	ssh root@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
-	 make dependencies'
+	 make dependencies.root'
+	ssh $(USER)@droplet 'make dependencies'
 
 env:
 ifeq ($(SHOWENV),)
