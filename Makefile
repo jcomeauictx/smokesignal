@@ -5,8 +5,11 @@ PYTHON_PKG := python3
 PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
 PYLINT_PKG := pylint
 PYLINT_APK := py3-pylint
+FIREFOX ?= $(word 1, $(shell which firefox 2>/dev/null))
+FIREFOX_PKG := firefox-esr
+FIREFOX_APK :=  # not needed on iSH (but is actually available!)
 REPO := $(notdir $(CURDIR))
-COMMANDS := PYTHON PYLINT
+COMMANDS := PYTHON PYLINT FIREFOX
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-zbar python3-zmq
@@ -46,7 +49,7 @@ dependencies:
 	 fi; \
 	done
 dependencies.root:
-	$(PKGMGR) $(YES) $(INSTALL) $(REQUIRED)
+	$(PKGMGR) $(YES) $(INSTALL) $(REQUIRED) $(PACKAGES)
 %.pylint: %.py
 	pylint $<
 %.doctest: %.py
