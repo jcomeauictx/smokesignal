@@ -109,7 +109,7 @@ droplet:
 	 wget -O- http://127.0.0.1:8080/README.md > /dev/null \
 	 || make wsgi &'
 	ssh -Y $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
-	 make view
+	 make view'
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@
