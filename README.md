@@ -20,8 +20,8 @@ install on a digitalocean droplet
 
 ## future directions
 
-* add routing within the mesh and over the Internet, for those nodes with access. think of GPS schemes like (Tony Hain's draft spec)[https://datatracker.ietf.org/doc/html/draft-hain-ipv6-geo-addr-02] and (Imielinski's similar proposal)[https://www.rfc-editor.org/rfc/rfc2009.html]. also see my (w-a-s-t-e project)[https://github.com/jcomeauictx/w-a-s-t-e].
-* precede each upload with a form-generated JSON packet that specifies requested treatment for the upload, things like "ipfs", "email-to", "allow-download", etc., and the node owner can enable or disable these requests as he sees fit. the return json packet should let the user know the status of his request, either acdcepted or denied, and if ipfs or allow-download, should return the identifier for future retrieval.
+* add routing within the mesh and over the Internet, for those nodes with access. think of GPS schemes like [Tony Hain's draft spec](https://datatracker.ietf.org/doc/html/draft-hain-ipv6-geo-addr-02) and [Imielinski's similar proposal](https://www.rfc-editor.org/rfc/rfc2009.html). also see my [w-a-s-t-e project](https://github.com/jcomeauictx/w-a-s-t-e).
+* precede each upload with a form-generated JSON packet that specifies requested treatment for the upload, things like "ipfs", "email-to", "allow-download", etc., and the node owner can enable or disable these requests as he sees fit. the return json packet should let the user know the status of his request, either accepted or denied, and if ipfs or allow-download, should return the identifier for future retrieval.
 
 ## developer's notes
 * once prototype is working, move to javascript frontend and keep python
