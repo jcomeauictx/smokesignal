@@ -9,13 +9,14 @@ REPO := $(notdir $(CURDIR))
 COMMANDS := PYTHON PYLINT
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
- python3-tk python3-pil.imagetk python3-zbar
+ python3-tk python3-pil.imagetk python3-zbar python3-zmq
 YES := -y
 PKGMGR := $(word 1, $(shell which apk apt apt-get yum dnf 2>/dev/null))
 INSTALL := install
 PACKAGES := $(foreach COMMAND, $(COMMANDS), $($(COMMAND)_PKG))
 ifeq ($(notdir $(PKGMGR)),apk)
-REQUIRED := py3-qrcode python3-tkinter py3-pillow py3-pyzbar py3-zbar
+REQUIRED := py3-qrcode python3-tkinter py3-pillow py3-pyzbar py3-zbar \
+ py3-pyzmq
 INSTALL := add
 YES :=
 PACKAGES := $(foreach COMMAND, $(COMMANDS), \
@@ -97,7 +98,10 @@ droplet:
 	 make dependencies.root'
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 make dependencies'
-
+	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
+	 make wsgi &'
+	ssh -Y $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
+	 make view
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@
