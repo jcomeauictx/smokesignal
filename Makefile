@@ -1,18 +1,25 @@
 SHELL := /bin/bash
 GITPREFIX ?= $(dir $(shell git remote get-url origin))
 PYTHON ?= $(word 1, $(shell which python3 python false 2>/dev/null))
+PYTHON_PKG := python3
 PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
+PYLINT_PKG := pylint
+PYLINT_APK := py3-pylint
 REPO := $(notdir $(CURDIR))
+COMMANDS := PYTHON PYLINT
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-zbar
 YES := -y
-PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
+PKGMGR := $(word 1, $(shell which apk apt apt-get yum dnf 2>/dev/null))
 INSTALL := install
+PACKAGES := $(foreach COMMAND, $(COMMANDS), $($(COMMAND)_PKG))
 ifeq ($(notdir $(PKGMGR)),apk)
 REQUIRED := py3-qrcode python3-tkinter py3-pillow py3-pyzbar py3-zbar
 INSTALL := add
 YES :=
+PACKAGES := $(foreach COMMAND, $(COMMANDS), \
+ $(word 1, $($(COMMAND)_APK) $($(COMMAND)_PKG)))
 endif
 SCRIPTS := $(wildcard *.py)
 DOCTESTS := $(SCRIPTS:.py=.doctest)
@@ -88,7 +95,8 @@ droplet:
 	 fi'
 	ssh root@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 make dependencies.root'
-	ssh $(USER)@droplet 'make dependencies'
+	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
+	 make dependencies'
 
 env:
 ifeq ($(SHOWENV),)
