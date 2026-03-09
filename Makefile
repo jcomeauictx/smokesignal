@@ -60,9 +60,21 @@ droplet:
 	 echo See section quickstart of README.md >&2; \
 	 false; \
 	fi
+	ssh root@droplet apt update
+	ssh root@droplet apt install -y make git
 	ssh root@droplet 'id $(USER) || useradd -m $(USER)'
 	ssh root@droplet '[ -d ~$(USER)/.ssh ] || \
 	 mkdir -m 0700 ~$(USER)/.ssh && chown $(USER):$(USER) ~$(USER)/.ssh'
+	ssh root@droplet '[ -f ~$(USER)/.ssh/authorized_keys ] || \
+	 cp -a .ssh/authorized_keys ~$(USER)/.ssh/ && \
+	 chown $(USER):$(USER) ~$(USER)/.ssh/authorized_keys'
+	ssh droplet mkdir -p src/jcomeauictx
+	ssh droplet '[ -f .ssh/id_rsa.pub ] || ssh-keygen -t rsa \
+	 -f .ssh/id_rsa -N ""'
+	@ssh droplet '[ -d src/jcomeauictx/smokesignal ] || \
+	 git clone $(GITPREFIX)/smokesignal || \
+	 echo "you may need to add your droplet key to your git repo" >&2; \
+	 false'
 
 env:
 ifeq ($(SHOWENV),)
