@@ -6,11 +6,13 @@ REPO := $(notdir $(CURDIR))
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-zbar
+YES := -y
 PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
 INSTALL := install
 ifeq ($(notdir $(PKGMGR)),apk)
 REQUIRED := py3-qrcode python3-tkinter py3-pillow py3-pyzbar py3-zbar
 INSTALL := add
+YES :=
 endif
 SCRIPTS := $(wildcard *.py)
 DOCTESTS := $(SCRIPTS:.py=.doctest)
@@ -36,7 +38,7 @@ dependencies:
 	 fi; \
 	done
 dependencies.root:
-	$(PKGMGR) $(INSTALL) $(REQUIRED)
+	$(PKGMGR) $(YES) $(INSTALL) $(REQUIRED)
 %.pylint: %.py
 	pylint $<
 %.doctest: %.py
