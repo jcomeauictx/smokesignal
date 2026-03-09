@@ -2,6 +2,7 @@ SHELL := /bin/bash
 GITPREFIX ?= $(dir $(shell git remote get-url origin))
 PYTHON ?= $(word 1, $(shell which python3 python false 2>/dev/null))
 PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
+REPO := $(notdir $(CURDIR))
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-pyzbar python3-zbar
@@ -61,20 +62,23 @@ droplet:
 	 false; \
 	fi
 	ssh root@droplet apt update
+	ssh root@droplet apt -y upgrade
 	ssh root@droplet apt install -y make git
-	ssh root@droplet 'id $(USER) || useradd -m $(USER)'
+	ssh root@droplet 'id $(USER) || \
+	 useradd --create-home --shell /bin/bash $(USER)'
 	ssh root@droplet '[ -d ~$(USER)/.ssh ] || \
 	 mkdir -m 0700 ~$(USER)/.ssh && chown $(USER):$(USER) ~$(USER)/.ssh'
 	ssh root@droplet '[ -f ~$(USER)/.ssh/authorized_keys ] || \
 	 cp -a .ssh/authorized_keys ~$(USER)/.ssh/ && \
 	 chown $(USER):$(USER) ~$(USER)/.ssh/authorized_keys'
-	ssh droplet mkdir -p src/jcomeauictx
-	ssh droplet '[ -f .ssh/id_rsa.pub ] || ssh-keygen -t rsa \
+	ssh $(USER)@droplet mkdir -p src/jcomeauictx
+	ssh $(USER)@droplet '[ -f .ssh/id_rsa.pub ] || ssh-keygen -t rsa \
 	 -f .ssh/id_rsa -N ""'
-	@ssh droplet '[ -d src/jcomeauictx/smokesignal ] || \
-	 git clone $(GITPREFIX)/smokesignal || \
+	ssh $(USER)@droplet 'ssh-keyscan github.com >> .ssh/known_hosts'
+	ssh $(USER)@droplet '[ -d src/jcomeauictx/$(REPO) ] || \
+	 cd src/jcomeauictx && git clone $(GITPREFIX)/$(REPO) || \
 	 echo "you may need to add your droplet key to your git repo" >&2; \
-	 cat .ssh/id_rsa.pub; \
+	 cat ~/.ssh/id_rsa.pub; \
 	 false'
 
 env:
