@@ -112,9 +112,10 @@ droplet:
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 wget -O- http://127.0.0.1:8080/README.md > /dev/null 2>&1 \
 	 || setsid -f make wsgi < /dev/null > wsgi.log 2>&1'
-	ssh -Y $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
-	 setsid -f firefox http://127.0.0.1:8080/ < /dev/null > /dev/null 2>&1; \
-	 sleep 1; tail -n 100 -f wsgi.log'
+	wget -q -O /dev/null http://127.0.0.1:8080/ 2>&1 \
+	 || ssh -f -N -L 8080:127.0.0.1:8080 $(USER)@droplet
+	make view
+	ssh $(USER)@droplet 'tail -n 100 -f ~$(USER)/src/jcomeauictx/$(REPO)/wsgi.log'
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@
