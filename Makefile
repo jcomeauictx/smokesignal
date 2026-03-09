@@ -5,7 +5,7 @@ PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
 REPO := $(notdir $(CURDIR))
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
- python3-tk python3-pil.imagetk python3-pyzbar python3-zbar
+ python3-tk python3-pil.imagetk python3-zbar
 PKGMGR := $(word 1, $(shell which apt apt-get apk yum dnf 2>/dev/null))
 INSTALL := install
 ifeq ($(notdir $(PKGMGR)),apk)
@@ -74,13 +74,16 @@ droplet:
 	ssh $(USER)@droplet mkdir -p src/jcomeauictx
 	ssh $(USER)@droplet '[ -f .ssh/id_rsa.pub ] || ssh-keygen -t rsa \
 	 -f .ssh/id_rsa -N ""'
-	ssh $(USER)@droplet 'ssh-keyscan github.com >> .ssh/known_hosts'
+	ssh $(USER)@droplet 'grep -q "^github.com " .ssh/known_hosts || \
+	 ssh-keyscan github.com >> .ssh/known_hosts'
 	ssh $(USER)@droplet 'if [ ! -d src/jcomeauictx/$(REPO) ]; then \
 	 cd src/jcomeauictx && git clone $(GITPREFIX)$(REPO) || \
 	 (echo "you may need to add your droplet key to your git repo" >&2; \
 	 cat ~/.ssh/id_rsa.pub; \
 	 false); \
 	 fi'
+	ssh root@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
+	 make dependencies'
 
 env:
 ifeq ($(SHOWENV),)
