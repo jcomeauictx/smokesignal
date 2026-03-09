@@ -18,6 +18,8 @@ install on a digitalocean droplet
 1. create a droplet in your nearest data center: Debian 13, Basic, Regular, $6/month in March 2026, which gets you 1GB RAM, 25GB SSD, and 1000GB transfer (the $4 option with 512MB RAM was insufficient). add the IP to your /etc/hosts as: `echo 10.23.221.67 droplet | sudo tee -a /etc/hosts`. or advanced users can add to $HOME/.ssh/config without sudo access. make sure to enable, or add, your ssh key(s) to the droplet on creation.
 2. `make droplet`
 
+This will take a few minutes, as it's tunnelling over X, but you should eventually see a Firefox window with a huge barcode showing. It won't actually function, as even if the droplet had a camera (it doesn't), you wouldn't be able to be physically present to show it your iPhone running smokesignal. This is just illustrative of the steps necessary to install on a barebones system.
+
 ## future directions
 
 * add routing within the mesh and over the Internet, for those nodes with access. think of GPS schemes like [Tony Hain's draft spec](https://datatracker.ietf.org/doc/html/draft-hain-ipv6-geo-addr-02) and [Imielinski's similar proposal](https://www.rfc-editor.org/rfc/rfc2009.html). also see my [w-a-s-t-e project](https://github.com/jcomeauictx/w-a-s-t-e).
