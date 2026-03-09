@@ -55,6 +55,11 @@ edit:
 	vi wsgi.py smokesignal.{html,js,css}
 view:
 	xdg-open http://127.0.0.1:8080/
+droplet:
+	@if ! ping -c 1 droplet; then \
+	 echo See section quickstart of README.md >&2; \
+	 false; \
+	fi
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@
