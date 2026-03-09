@@ -15,7 +15,7 @@ point-to-point links many kilometers distant, linking community meshes.
 
 install on a digitalocean droplet
 
-1. create a droplet in your nearest data center: Debian 13, Basic, Regular, $4/month in March 2026, which gets you 512MB RAM, 10GB SSD, and 500GB transfer. add the IP to your /etc/hosts as: `echo 10.23.221.67 droplet | sudo tee -a /etc/hosts`. or advanced users can add to $HOME/.ssh/config without sudo access. make sure to enable, or add, your ssh key(s) to the droplet on creation.
+1. create a droplet in your nearest data center: Debian 13, Basic, Regular, $6/month in March 2026, which gets you 1GB RAM, 25GB SSD, and 1000GB transfer (the $4 option with 512MB RAM was insufficient). add the IP to your /etc/hosts as: `echo 10.23.221.67 droplet | sudo tee -a /etc/hosts`. or advanced users can add to $HOME/.ssh/config without sudo access. make sure to enable, or add, your ssh key(s) to the droplet on creation.
 2. `make droplet`
 
 ## future directions
