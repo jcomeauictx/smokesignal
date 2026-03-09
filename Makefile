@@ -75,11 +75,12 @@ droplet:
 	ssh $(USER)@droplet '[ -f .ssh/id_rsa.pub ] || ssh-keygen -t rsa \
 	 -f .ssh/id_rsa -N ""'
 	ssh $(USER)@droplet 'ssh-keyscan github.com >> .ssh/known_hosts'
-	ssh $(USER)@droplet '[ -d src/jcomeauictx/$(REPO) ] || \
-	 cd src/jcomeauictx && git clone $(GITPREFIX)/$(REPO) || \
-	 echo "you may need to add your droplet key to your git repo" >&2; \
+	ssh $(USER)@droplet 'if [ ! -d src/jcomeauictx/$(REPO) ]; then \
+	 cd src/jcomeauictx && git clone $(GITPREFIX)$(REPO) || \
+	 (echo "you may need to add your droplet key to your git repo" >&2; \
 	 cat ~/.ssh/id_rsa.pub; \
-	 false'
+	 false); \
+	 fi'
 
 env:
 ifeq ($(SHOWENV),)
