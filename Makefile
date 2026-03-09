@@ -74,6 +74,7 @@ droplet:
 	@ssh droplet '[ -d src/jcomeauictx/smokesignal ] || \
 	 git clone $(GITPREFIX)/smokesignal || \
 	 echo "you may need to add your droplet key to your git repo" >&2; \
+	 cat .ssh/id_rsa.pub; \
 	 false'
 
 env:
