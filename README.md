@@ -18,7 +18,7 @@ install on a digitalocean droplet
 1. create a droplet in your nearest data center: Debian 13, Basic, Regular, $6/month in March 2026, which gets you 1GB RAM, 25GB SSD, and 1000GB transfer (the $4 option with 512MB RAM was insufficient). add the IP to your /etc/hosts as: `echo 10.23.221.67 droplet | sudo tee -a /etc/hosts`. or advanced users can add to $HOME/.ssh/config without sudo access. make sure to enable, or add, your ssh key(s) to the droplet on creation.
 2. `make droplet`
 
-This will take a few minutes, as it's tunnelling over X, but you should eventually see a Firefox window with a huge barcode showing. It won't actually function, as even if the droplet had a camera (it doesn't), you wouldn't be able to be physically present to show it your iPhone running smokesignal. This is just illustrative of the steps necessary to install on a barebones system.
+This will take a few minutes, but you should eventually see a Firefox window with a huge barcode showing. It's tunneling the wsgi server over ssh, not tunnelling X, so it should run fast compared to a remote X session. Just be aware that, although it's using the camera on your local box and browser, any files transferred are going to the received/ folder, or coming from your home directory, on the droplet.
 
 ## future directions
 
