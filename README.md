@@ -25,5 +25,6 @@ install on a digitalocean droplet
 
 ## developer's notes
 * once prototype is working, move to javascript frontend and keep python
-  running under uwsgi on backend. then it can run on iPhone with iSH.
-* needs my fork of zbar for returning bytes from decode
+  running under uwsgi on backend. then it can run on iPhone with iSH. (done)
+* needs my fork of zbar for returning bytes from decode with Python-tkinter
+  version, and my forks of qrcodejs and jsQR for the browser-based version.
