@@ -1,15 +1,20 @@
 SHELL := /bin/bash
+WHICH ?= type -p
 GITPREFIX ?= $(dir $(shell git remote get-url origin))
-PYTHON ?= $(word 1, $(shell which python3 python false 2>/dev/null))
+PYTHON ?= $(word 1, $(shell which python3 python 2>/dev/null))
 PYTHON_PKG := python3
-PYLINT ?= $(word 1, $(shell which pylint pylint3 false 2>/dev/null))
+PYTHON_APK := python3
+PYLINT ?= $(word 1, $(shell which pylint pylint3 2>/dev/null))
 PYLINT_PKG := pylint
 PYLINT_APK := py3-pylint
 FIREFOX ?= $(word 1, $(shell which firefox 2>/dev/null))
 FIREFOX_PKG := firefox-esr
 FIREFOX_APK :=  # not needed on iSH (but is actually available!)
+XAUTH := $(word 1, $(shell which xauth))
+XAUTH_PKG := xauth
+XAUTH_APK :=  # also not needed on iSH, but available
 REPO := $(notdir $(CURDIR))
-COMMANDS := PYTHON PYLINT FIREFOX
+COMMANDS := PYTHON PYLINT FIREFOX XAUTH
 JSREQUIRED := qrcodejs jsQR html5-qrcode
 REQUIRED := python3-opencv python3-qrcode python3-qrtools \
  python3-tk python3-pil.imagetk python3-zbar python3-zmq
@@ -22,8 +27,7 @@ REQUIRED := py3-qrcode python3-tkinter py3-pillow py3-pyzbar py3-zbar \
  py3-pyzmq
 INSTALL := add
 YES :=
-PACKAGES := $(foreach COMMAND, $(COMMANDS), \
- $(word 1, $($(COMMAND)_APK) $($(COMMAND)_PKG)))
+PACKAGES := $(foreach COMMAND, $(COMMANDS), $($(COMMAND)_APK))
 endif
 SCRIPTS := $(wildcard *.py)
 DOCTESTS := $(SCRIPTS:.py=.doctest)
