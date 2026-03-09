@@ -60,6 +60,10 @@ droplet:
 	 echo See section quickstart of README.md >&2; \
 	 false; \
 	fi
+	ssh root@droplet 'id $(USER) || useradd -m $(USER)'
+	ssh root@droplet '[ -d ~$(USER)/.ssh ] || \
+	 mkdir -m 0700 ~$(USER)/.ssh && chown $(USER):$(USER) ~$(USER)/.ssh'
+
 env:
 ifeq ($(SHOWENV),)
 	$(MAKE) SHOWENV=1 $@
