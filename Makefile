@@ -69,7 +69,11 @@ uwsgi: wsgi.py
 edit:
 	vi wsgi.py smokesignal.{html,js,css}
 view:
-	xdg-open http://127.0.0.1:8080/
+	if [ "$$(which firefox)" ]; then \
+	 firefox http://127.0.0.1:8080/; \
+	else \
+	 echo point your browser to http://127.0.0.1:8080/ >&2; \
+	fi
 droplet:
 	@if ! ping -c 1 droplet; then \
 	 echo See section quickstart of README.md >&2; \
@@ -102,7 +106,8 @@ droplet:
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 make dependencies'
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
-	 make wsgi &'
+	 wget -O- http://127.0.0.1:8080/README.md > /dev/null \
+	 || make wsgi &'
 	ssh -Y $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 make view
 env:
