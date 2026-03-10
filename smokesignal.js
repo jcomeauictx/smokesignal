@@ -123,9 +123,16 @@ window.addEventListener("load", function() {
                 drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
                 drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
                 drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
-                const rawBytes = bufferToString(
-                    new Uint8Array(code.binaryData).buffer);
-                onScanSuccess(rawBytes);
+                const expectedSize = hashable + hashSize;
+                if (code.binaryData.length === expectedSize) {
+                    const rawBytes = bufferToString(
+                        new Uint8Array(code.binaryData).buffer);
+                    onScanSuccess(rawBytes);
+                } else {
+                    console.warn("ignoring scan: expected " +
+                        expectedSize + " bytes, got " +
+                        code.binaryData.length);
+                }
             }
         }
         requestAnimationFrame(scanTick);

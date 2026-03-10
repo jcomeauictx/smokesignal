@@ -1,0 +1,8 @@
+{
+    "name": "Smokesignal",
+    "short_name": "Smokesignal",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff"
+}
