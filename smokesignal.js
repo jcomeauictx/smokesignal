@@ -236,11 +236,12 @@ window.addEventListener("load", function() {
     }
     /* ArrayBuffer to binary string */
     // https://stackoverflow.com/a/71516276/493161
-    // and further improvements by claude
 
     function bufferToString(buffer) {
         const bytes = new Uint8Array(buffer);
-	return String.fromCharCode.apply(null, bytes);
+        return bytes.reduce(function (string, byte) {
+            return string + String.fromCharCode(byte);
+        }, "");
     }
 
     /* binary string to ArrayBuffer */
