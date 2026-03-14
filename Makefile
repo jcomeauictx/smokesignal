@@ -1,4 +1,7 @@
 SHELL := /bin/bash
+# use $(LOCALHOST) not localhost, which also maps to ::1
+LOCALHOST := 127.0.0.1
+PORT := 8080
 WHICH ?= type -p
 GITPREFIX ?= $(dir $(shell git remote get-url origin))
 PYTHON ?= $(word 1, $(shell which python3 python 2>/dev/null))
@@ -69,14 +72,14 @@ syncpeer:
 wsgi: wsgi.py
 	python3 $<
 uwsgi: wsgi.py
-	$@ --http :8080 --wsgi-file $< --callable application
+	$@ --http :$(PORT) --wsgi-file $< --callable application
 edit:
 	vi wsgi.py smokesignal.{html,js,css}
 view:
 	if [ "$$(which firefox)" ]; then \
-	 firefox http://127.0.0.1:8080/; \
+	 firefox http://$(LOCALHOST):$(PORT)/; \
 	else \
-	 echo point your browser to http://127.0.0.1:8080/ >&2; \
+	 echo point your browser to http://$(LOCALHOST):$(PORT)/ >&2; \
 	fi
 droplet:
 	@if ! ping -c 1 droplet; then \
@@ -110,10 +113,10 @@ droplet:
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
 	 make dependencies'
 	ssh $(USER)@droplet 'cd ~$(USER)/src/jcomeauictx/$(REPO) && \
-	 wget -O- http://127.0.0.1:8080/README.md > /dev/null 2>&1 \
+	 wget -O- http://$(LOCALHOST):$(PORT)/README.md > /dev/null 2>&1 \
 	 || setsid -f make wsgi < /dev/null > wsgi.log 2>&1'
-	wget -q -O /dev/null http://127.0.0.1:8080/ 2>&1 \
-	 || ssh -f -N -L 8080:127.0.0.1:8080 $(USER)@droplet
+	wget -q -O /dev/null http://$(LOCALHOST):$(PORT)/ 2>&1 \
+	 || ssh -f -N -L $(PORT):$(LOCALHOST):$(PORT) $(USER)@droplet
 	make view
 	ssh $(USER)@droplet 'tail -n 100 -f ~$(USER)/src/jcomeauictx/$(REPO)/wsgi.log'
 env:

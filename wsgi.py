@@ -24,6 +24,7 @@ from smokesignal import newpath, SERIAL_BYTES, LENGTH_BYTES, CHUNKSIZE
 logging.basicConfig(level=logging.DEBUG if __debug__ else logging.INFO)
 logging.warning('wsgi script starting')
 
+PORT = int(os.getenv('PORT', '8080'))
 STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 RECEIVED_DIR = os.path.join(STATIC_DIR, 'received')
 STATE = {  # mutable for maintaining state
@@ -166,5 +167,5 @@ def background():
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
     Thread(target=background, daemon=True).start()
-    print('serving on http://127.0.0.1:8080')
-    make_server('127.0.0.1', 8080, application).serve_forever()
+    logging.info('serving on http://127.0.0.1:%d', PORT)
+    make_server('127.0.0.1', PORT, application).serve_forever()
