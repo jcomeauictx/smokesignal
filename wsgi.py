@@ -167,5 +167,9 @@ def background():
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
     Thread(target=background, daemon=True).start()
-    logging.info('serving on http://127.0.0.1:%d', PORT)
-    make_server('127.0.0.1', PORT, application).serve_forever()
+    logging.info('attempting serving on http://127.0.0.1:%d', PORT)
+    try:
+        make_server('127.0.0.1', PORT, application).serve_forever()
+    except OSError as problem:
+        logging.error('cannot serve smokesignal on port %d: %s', PORT, problem)
+        raise
