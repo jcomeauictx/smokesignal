@@ -73,8 +73,8 @@ wsgi: wsgi.py
 	python3 $<
 uwsgi: wsgi.py
 	$@ --http-socket :$(PORT) \
-	 --plugin python3
-	 --wsgi-file $<
+	 --plugin python3 \
+	 --wsgi-file $< \
 	 --callable application
 edit:
 	vi wsgi.py smokesignal.{html,js,css}
