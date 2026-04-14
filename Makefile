@@ -40,7 +40,8 @@ DELETE ?= --delete
 ifneq ($(SHOWENV),)
 export
 endif
-default: wsgi
+default: restart
+restart: stop uwsgi
 transceive: smokesignal.py
 	./$< $@
 transmit: smokesignal.py /bin/bash
@@ -71,11 +72,15 @@ syncpeer:
 	 . peer:$(PWD)/
 wsgi: wsgi.py
 	python3 $<
-uwsgi: wsgi.py
-	$@ --http-socket :$(PORT) \
+uwsgi: smokesignal.pid
+smokesignal.pid: wsgi.py
+	uwsgi --http-socket $(LOCALHOST):$(PORT) \
 	 --plugin python3 \
 	 --wsgi-file $< \
-	 --callable application
+	 --callable application & echo $$! > $@
+stop: | $(wildcard smokesignal.pid)
+	if [ -e "$|" ]; then kill $$(cat $|) || true; fi
+	rm -f $|
 edit:
 	vi wsgi.py smokesignal.{html,js,css}
 view:
