@@ -72,7 +72,10 @@ syncpeer:
 wsgi: wsgi.py
 	python3 $<
 uwsgi: wsgi.py
-	$@ --http :$(PORT) --wsgi-file $< --callable application
+	$@ --http-socket :$(PORT) \
+	 --plugin python3
+	 --wsgi-file $<
+	 --callable application
 edit:
 	vi wsgi.py smokesignal.{html,js,css}
 view:
